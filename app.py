@@ -3,7 +3,7 @@ from flask import Flask, render_template, url_for
 
 app = Flask(__name__)
 
-# --- БАЗА ДАННЫХ ФИЛЬМОВ С ПРЯМЫМИ ВИДЕОССЫЛКАМИ (БЕЗ БЛОКИРОВОК YOUTUBE) ---
+# --- БАЗА ДАННЫХ ФИЛЬМОВ С ПРЯМЫМИ ВИДЕОССЫЛКАМИ ---
 FILMS_DB = {
     'action': {
         'title': 'Боевики & Экшен',
@@ -14,7 +14,6 @@ FILMS_DB = {
                 'year': '2015',
                 'desc': 'В постапокалиптическом мире Макс объединяется с воительницей Фуриосой, чтобы сбежать от тирана Несмертного Джо.',
                 'image': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop',
-                # Прямая ссылка на MP4-видео (короткий кинематографичный ролик)
                 'video_url': 'https://assets.mixkit.co/videos/preview/mixkit-fire-burning-in-the-desert-41552-large.mp4'
             },
             {
@@ -63,9 +62,9 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 if not os.path.exists(TEMPLATES_DIR): os.makedirs(TEMPLATES_DIR)
 if not os.path.exists(STATIC_DIR): os.makedirs(STATIC_DIR)
 
-# Единый ультра-современный дизайн (CSS)
+# Единый дизайн (CSS)
 SHARED_CSS = '''
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;800&display=swap');
 
 body { 
     font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -77,7 +76,6 @@ body {
     position: relative;
 }
 
-/* Эффектный анимированный фон */
 body::before {
     content: "";
     position: fixed;
@@ -89,7 +87,6 @@ body::before {
     pointer-events: none;
 }
 
-/* Сетка из микро-точек для глубины */
 body::after {
     content: "";
     position: fixed;
@@ -101,7 +98,6 @@ body::after {
     pointer-events: none;
 }
 
-/* Навигация с размытием заднего плана (Glassmorphism) */
 nav { 
     background-color: rgba(6, 6, 8, 0.7); 
     backdrop-filter: blur(20px);
@@ -143,17 +139,16 @@ nav a:hover {
 }
 '''
 
-# 1. Создаем index.html
-with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-    f.write(f'''<!DOCTYPE html>
+# 1. Создаем index.html (Без использования f-строк)
+index_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная | Films_Iliaz Ultra</title>
     <style>
-        {SHARED_CSS}
-        .hero {{ 
+        REPLACE_WITH_SHARED_CSS
+        .hero { 
             padding: 180px 20px; 
             text-align: center; 
             min-height: 50vh;
@@ -162,25 +157,25 @@ with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f
             justify-content: center;
             align-items: center;
             animation: fadeIn 1s ease-out;
-        }}
-        @keyframes fadeIn {{
-            from {{ opacity: 0; transform: translateY(20px); }}
-            to {{ opacity: 1; transform: translateY(0); }}
-        }}
-        .hero h1 {{
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero h1 {
             font-size: 3.8rem;
             font-weight: 800;
             margin: 0;
             line-height: 1.1;
-        }}
-        .hero p {{ 
+        }
+        .hero p { 
             font-size: 1.35rem; 
             color: #9ca3af; 
             max-width: 650px; 
             line-height: 1.7;
             margin: 20px 0 35px;
-        }}
-        .browse-btn {{
+        }
+        .browse-btn {
             background-color: #ff2e3b;
             color: white;
             padding: 16px 36px;
@@ -190,12 +185,12 @@ with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f
             font-size: 1.15rem;
             box-shadow: 0 5px 25px rgba(255, 46, 59, 0.45);
             transition: all 0.3s ease;
-        }}
-        .browse-btn:hover {{
+        }
+        .browse-btn:hover {
             background-color: #e01b28;
             transform: scale(1.05);
             box-shadow: 0 8px 30px rgba(255, 46, 59, 0.7);
-        }}
+        }
     </style>
 </head>
 <body>
@@ -212,29 +207,30 @@ with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f
         <a href="/genre/action" class="browse-btn">Войти в медиатеку</a>
     </div>
 </body>
-</html>''')
+</html>'''
 
-# 2. Создаем genre.html (Самый продвинутый интерактивный интерфейс)
-with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f:
-    f.write(f'''<!DOCTYPE html>
+with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
+    f.write(index_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
+
+# 2. Создаем genre.html (Без использования f-строк)
+genre_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{{{ genre_title }}}} | Films_Iliaz</title>
+    <title>{{ genre_title }} | Films_Iliaz</title>
     <style>
-        {SHARED_CSS}
-        h1 {{ text-align: center; font-size: 2.8rem; margin-bottom: 5px; }}
+        REPLACE_WITH_SHARED_CSS
+        h1 { text-align: center; font-size: 2.8rem; margin-bottom: 5px; }
         
-        /* Контейнер инструментов */
-        .tools-panel {{
+        .tools-panel {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
             margin: 30px 0;
-        }}
-        .search-input {{
+        }
+        .search-input {
             width: 100%;
             max-width: 500px;
             padding: 15px 25px;
@@ -246,21 +242,20 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             outline: none;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }}
-        .search-input:focus {{
+        }
+        .search-input:focus {
             border-color: #ff2e3b;
             box-shadow: 0 0 20px rgba(255, 46, 59, 0.4);
             background-color: rgba(25, 25, 32, 0.9);
-        }}
+        }
 
-        /* Сетка фильмов */
-        .films-grid {{ 
+        .films-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); 
             gap: 40px; 
             margin-top: 20px; 
-        }}
-        .film-card {{ 
+        }
+        .film-card { 
             background: rgba(18, 18, 22, 0.85); 
             border-radius: 24px; 
             overflow: hidden; 
@@ -271,30 +266,29 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(5px);
-        }}
-        .film-card:hover {{ 
+        }
+        .film-card:hover { 
             transform: translateY(-10px); 
             box-shadow: 0 20px 40px rgba(255, 46, 59, 0.25); 
             border-color: rgba(255, 46, 59, 0.3);
-        }}
-        .film-poster-wrapper {{
+        }
+        .film-poster-wrapper {
             position: relative;
             width: 100%;
             height: 440px;
             overflow: hidden;
-        }}
-        .film-poster {{ 
+        }
+        .film-poster { 
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
             transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }}
-        .film-card:hover .film-poster {{
+        }
+        .film-card:hover .film-poster {
             transform: scale(1.05);
-        }}
+        }
         
-        /* Сердечко */
-        .like-btn {{
+        .like-btn {
             position: absolute;
             top: 20px;
             right: 20px;
@@ -312,29 +306,29 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             color: #ffffff;
             font-size: 1.4rem;
             z-index: 10;
-        }}
-        .like-btn:hover {{ transform: scale(1.15); background: rgba(0, 0, 0, 0.9); }}
-        .like-btn.liked {{ color: #ff2e3b; text-shadow: 0 0 10px rgba(255, 46, 59, 0.8); }}
+        }
+        .like-btn:hover { transform: scale(1.15); background: rgba(0, 0, 0, 0.9); }
+        .like-btn.liked { color: #ff2e3b; text-shadow: 0 0 10px rgba(255, 46, 59, 0.8); }
 
-        .film-info {{ 
+        .film-info { 
             padding: 25px; 
             display: flex; 
             flex-direction: column; 
             flex-grow: 1; 
-        }}
-        .film-title {{ 
+        }
+        .film-title { 
             margin: 0 0 8px 0; 
             font-size: 1.6rem; 
             font-weight: 800;
             line-height: 1.2; 
-        }}
-        .film-meta {{
+        }
+        .film-meta {
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 18px;
-        }}
-        .film-year {{ 
+        }
+        .film-year { 
             font-size: 0.85rem; 
             color: #ff2e3b; 
             font-weight: 800; 
@@ -342,29 +336,28 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             padding: 4px 12px;
             border-radius: 20px;
             border: 1px solid rgba(255, 46, 59, 0.2);
-        }}
-        .film-rating {{
+        }
+        .film-rating {
             font-size: 0.95rem;
             color: #ffb800;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(255, 184, 0, 0.2);
-        }}
-        .film-desc {{ 
+        }
+        .film-desc { 
             font-size: 0.95rem; 
             color: #9ca3af; 
             line-height: 1.6; 
             margin-bottom: 25px; 
             flex-grow: 1; 
-        }}
+        }
         
-        /* Кнопки */
-        .button-group {{
+        .button-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 10px;
-        }}
-        .watch-btn {{ 
+        }
+        .watch-btn { 
             background: linear-gradient(135deg, #ff2e3b, #cc111d);
             color: white; 
             text-align: center; 
@@ -375,13 +368,13 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             cursor: pointer;
             border: none;
             box-shadow: 0 4px 15px rgba(255, 46, 59, 0.3);
-        }}
-        .watch-btn:hover {{ 
+        }
+        .watch-btn:hover { 
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 46, 59, 0.5);
-        }}
+        }
         
-        .reviews-toggle-btn {{
+        .reviews-toggle-btn {
             background-color: #24242d;
             color: #e5e7eb;
             border: none;
@@ -390,56 +383,54 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-        }}
-        .reviews-toggle-btn:hover {{ background-color: #32323f; }}
+        }
+        .reviews-toggle-btn:hover { background-color: #32323f; }
 
-        /* ПАНЕЛЬ ОТЗЫВОВ */
-        .reviews-panel {{
+        .reviews-panel {
             display: none;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
             padding-top: 20px;
             margin-top: 20px;
             animation: slideDown 0.3s ease-out;
-        }}
-        @keyframes slideDown {{
-            from {{ opacity: 0; transform: translateY(-10px); }}
-            to {{ opacity: 1; transform: translateY(0); }}
-        }}
-        .reviews-list {{
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .reviews-list {
             max-height: 250px;
             overflow-y: auto;
             margin-bottom: 20px;
             padding-right: 5px;
-        }}
-        .reviews-list::-webkit-scrollbar {{ width: 5px; }}
-        .reviews-list::-webkit-scrollbar-thumb {{ background: #2f2f38; border-radius: 10px; }}
+        }
+        .reviews-list::-webkit-scrollbar { width: 5px; }
+        .reviews-list::-webkit-scrollbar-thumb { background: #2f2f38; border-radius: 10px; }
         
-        .review-item {{
+        .review-item {
             background: rgba(255, 255, 255, 0.03);
             padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 12px;
             border: 1px solid rgba(255,255,255,0.02);
             animation: fadeIn 0.3s ease;
-        }}
-        .review-header {{
+        }
+        .review-header {
             display: flex;
             justify-content: space-between;
             color: #9ca3af;
             margin-bottom: 6px;
             font-weight: 600;
             font-size: 0.9rem;
-        }}
-        .review-stars {{ color: #ffb800; }}
-        .review-text {{ color: #e5e7eb; line-height: 1.5; font-size: 0.9rem; }}
+        }
+        .review-stars { color: #ffb800; }
+        .review-text { color: #e5e7eb; line-height: 1.5; font-size: 0.9rem; }
         
-        /* Форма написания отзыва */
-        .review-form {{
+        .review-form {
             display: flex;
             flex-direction: column;
             gap: 10px;
-        }}
-        .review-form input, .review-form textarea {{
+        }
+        .review-form input, .review-form textarea {
             background: rgba(10, 10, 12, 0.8);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 8px;
@@ -447,28 +438,28 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             color: white;
             font-size: 0.9rem;
             outline: none;
-        }}
-        .review-form input:focus, .review-form textarea:focus {{
+        }
+        .review-form input:focus, .review-form textarea:focus {
             border-color: #ff2e3b;
-        }}
-        .review-form-row {{
+        }
+        .review-form-row {
             display: flex;
             gap: 15px;
             align-items: center;
-        }}
-        .star-rating-select {{
+        }
+        .star-rating-select {
             display: flex;
             gap: 4px;
             cursor: pointer;
             font-size: 1.4rem;
             color: #2a2a35;
-        }}
-        .star-rating-select span {{ transition: color 0.2s; }}
+        }
+        .star-rating-select span { transition: color 0.2s; }
         .star-rating-select span:hover,
-        .star-rating-select span.active {{
+        .star-rating-select span.active {
             color: #ffb800;
-        }}
-        .submit-review-btn {{
+        }
+        .submit-review-btn {
             background-color: rgba(255, 46, 59, 0.15);
             color: #ff2e3b;
             border: 1px solid rgba(255, 46, 59, 0.3);
@@ -477,14 +468,13 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-        }}
-        .submit-review-btn:hover {{
+        }
+        .submit-review-btn:hover {
             background-color: #ff2e3b;
             color: white;
-        }}
+        }
 
-        /* КИНОТЕАТР: Встроенный HTML5-модальный плеер */
-        .modal {{
+        .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -494,12 +484,12 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s ease;
-        }}
-        .modal.active {{
+        }
+        .modal.active {
             display: flex;
             opacity: 1;
-        }}
-        .modal-content {{
+        }
+        .modal-content {
             position: relative;
             width: 90%;
             max-width: 900px;
@@ -509,11 +499,11 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             overflow: hidden;
             box-shadow: 0 0 60px rgba(255, 46, 59, 0.4);
             border: 1px solid rgba(255,255,255,0.1);
-        }}
-        .modal-content video {{
+        }
+        .modal-content video {
             width: 100%; height: 100%; object-fit: cover;
-        }}
-        .close-modal {{
+        }
+        .close-modal {
             position: absolute;
             top: -50px; right: 0;
             color: white;
@@ -521,12 +511,12 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             cursor: pointer;
             font-weight: bold;
             transition: 0.2s;
-        }}
-        .close-modal:hover {{ color: #ff2e3b; }}
+        }
+        .close-modal:hover { color: #ff2e3b; }
         
-        .no-results {{
+        .no-results {
             text-align: center; font-size: 1.2rem; color: #6b7280; margin-top: 50px; display: none; width: 100%; grid-column: 1 / -1;
-        }}
+        }
     </style>
 </head>
 <body>
@@ -538,60 +528,57 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
         <a href="/about">О проекте</a>
     </nav>
     <div class="container">
-        <h1>Жанр: <span class="accent">{{{{ genre_title }}}}</span></h1>
+        <h1>Жанр: <span class="accent">{{ genre_title }}</span></h1>
         
         <div class="tools-panel">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 Быстрый поиск по названию фильма...">
         </div>
 
         <div class="films-grid" id="filmsGrid">
-            {{% for film in films %}}
-            <div class="film-card" data-id="{{{{ film.id }}}}" data-title="{{{{ film.title | lower }}}}">
+            {% for film in films %}
+            <div class="film-card" data-id="{{ film.id }}" data-title="{{ film.title | lower }}">
                 <div class="film-poster-wrapper">
-                    <button class="like-btn" onclick="toggleLike(this, '{{{{ film.title }}}}')">❤</button>
-                    <img src="{{{{ film.image }}}}" alt="{{{{ film.title }}}}" class="film-poster">
+                    <button class="like-btn" onclick="toggleLike(this, '{{ film.title }}')">❤</button>
+                    <img src="{{ film.image }}" alt="{{ film.title }}" class="film-poster">
                 </div>
                 <div class="film-info">
-                    <h3 class="film-title">{{{{ film.title }}}}</h3>
+                    <h3 class="film-title">{{ film.title }}</h3>
                     <div class="film-meta">
-                        <span class="film-year">{{{{ film.year }}}} год</span>
-                        <span class="film-rating" id="rating-{{{{ film.id }}}}">⭐ -- (0 отзывов)</span>
+                        <span class="film-year">{{ film.year }} год</span>
+                        <span class="film-rating" id="rating-{{ film.id }}">⭐ -- (0 отзывов)</span>
                     </div>
-                    <p class="film-desc">{{{{ film.desc }}}}</p>
+                    <p class="film-desc">{{ film.desc }}</p>
                     
                     <div class="button-group">
-                        <button class="watch-btn" onclick="openTrailer('{{{{ film.video_url }}}}')">▶ Трейлер</button>
-                        <button class="reviews-toggle-btn" onclick="toggleReviews('{{{{ film.id }}}}')">💬 Отзывы</button>
+                        <button class="watch-btn" onclick="openTrailer('{{ film.video_url }}')">▶ Трейлер</button>
+                        <button class="reviews-toggle-btn" onclick="toggleReviews('{{ film.id }}')">💬 Отзывы</button>
                     </div>
 
-                    <!-- Вкладка отзывов -->
-                    <div class="reviews-panel" id="reviews-panel-{{{{ film.id }}}}">
-                        <div class="reviews-list" id="reviews-list-{{{{ film.id }}}}"></div>
+                    <div class="reviews-panel" id="reviews-panel-{{ film.id }}">
+                        <div class="reviews-list" id="reviews-list-{{ film.id }}"></div>
                         
-                        <!-- Форма -->
                         <div class="review-form">
                             <div class="review-form-row">
-                                <input type="text" id="author-{{{{ film.id }}}}" placeholder="Ваше имя" required style="flex-grow: 1;">
-                                <div class="star-rating-select" id="star-select-{{{{ film.id }}}}">
-                                    <span onclick="setFormStars('{{{{ film.id }}}}', 1)">★</span>
-                                    <span onclick="setFormStars('{{{{ film.id }}}}', 2)">★</span>
-                                    <span onclick="setFormStars('{{{{ film.id }}}}', 3)">★</span>
-                                    <span onclick="setFormStars('{{{{ film.id }}}}', 4)">★</span>
-                                    <span onclick="setFormStars('{{{{ film.id }}}}', 5)">★</span>
+                                <input type="text" id="author-{{ film.id }}" placeholder="Ваше имя" required style="flex-grow: 1;">
+                                <div class="star-rating-select" id="star-select-{{ film.id }}">
+                                    <span onclick="setFormStars('{{ film.id }}', 1)">★</span>
+                                    <span onclick="setFormStars('{{ film.id }}', 2)">★</span>
+                                    <span onclick="setFormStars('{{ film.id }}', 3)">★</span>
+                                    <span onclick="setFormStars('{{ film.id }}', 4)">★</span>
+                                    <span onclick="setFormStars('{{ film.id }}', 5)">★</span>
                                 </div>
                             </div>
-                            <textarea id="comment-{{{{ film.id }}}}" placeholder="Поделитесь вашим впечатлением..." rows="2" required></textarea>
-                            <button class="submit-review-btn" onclick="submitReview('{{{{ film.id }}}}')">Отправить отзыв</button>
+                            <textarea id="comment-{{ film.id }}" placeholder="Поделитесь вашим впечатлением..." rows="2" required></textarea>
+                            <button class="submit-review-btn" onclick="submitReview('{{ film.id }}')">Отправить отзыв</button>
                         </div>
                     </div>
                 </div>
             </div>
-            {{% endfor %}}
+            {% endfor %}
             <div class="no-results" id="noResults">Ничего не найдено. Попробуйте изменить поисковый запрос!</div>
         </div>
     </div>
 
-    <!-- Встроенный модальный HTML5-плеер (РАБОТАЕТ БЕЗ БЛОКИРОВОК) -->
     <div class="modal" id="videoModal" onclick="closeTrailer()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-modal" onclick="closeTrailer()">&times;</span>
@@ -600,9 +587,8 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
     </div>
 
     <script>
-        // Инициализация аудиоконтекста для эффектов клика (Web Audio API)
         let audioCtx;
-        function playClickSound(freq = 600, duration = 0.08) {{
+        function playClickSound(freq = 600, duration = 0.08) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -613,128 +599,125 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
-        }}
+        }
 
-        // --- 1. ЖИВОЙ ПОИСК ---
         const searchInput = document.getElementById('searchInput');
         const filmCards = document.querySelectorAll('.film-card');
         const noResults = document.getElementById('noResults');
 
-        searchInput.addEventListener('input', function() {{
+        searchInput.addEventListener('input', function() {
             const filterValue = searchInput.value.toLowerCase().trim();
             let hasVisibleCards = false;
 
-            filmCards.forEach(card => {{
+            filmCards.forEach(card => {
                 const title = card.getAttribute('data-title');
-                if (title.includes(filterValue)) {{
+                if (title.includes(filterValue)) {
                     card.style.display = 'flex';
                     hasVisibleCards = true;
-                }} else {{
+                } else {
                     card.style.display = 'none';
-                }}
-            }});
+                }
+            });
 
             noResults.style.display = hasVisibleCards ? 'none' : 'block';
-        }});
+        });
 
-        // --- 2. ИЗБРАННОЕ (ЛАЙКИ) ---
-        function toggleLike(btn, filmTitle) {{
+        function toggleLike(btn, filmTitle) {
             playClickSound(800, 0.1);
             let likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
-            if (likedFilms.includes(filmTitle)) {{
+            if (likedFilms.includes(filmTitle)) {
                 likedFilms = likedFilms.filter(item => item !== filmTitle);
                 btn.classList.remove('liked');
-            }} else {{
+            } else {
                 likedFilms.push(filmTitle);
                 btn.classList.add('liked');
-            }}
+            }
             localStorage.setItem('likedFilms', JSON.stringify(likedFilms));
-        }}
+        }
 
-        // --- 3. РАБОЧАЯ СИСТЕМА ОТЗЫВОВ И ОЦЕНОК ---
         const activeStarsData = {};
 
-        function toggleReviews(filmId) {{
+        function toggleReviews(filmId) {
             playClickSound(400, 0.05);
             const panel = document.getElementById('reviews-panel-' + filmId);
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }}
+        }
 
-        function setFormStars(filmId, rating) {{
+        function setFormStars(filmId, rating) {
             playClickSound(500 + (rating * 50), 0.05);
             activeStarsData[filmId] = rating;
             const starsContainer = document.getElementById('star-select-' + filmId);
             const stars = starsContainer.querySelectorAll('span');
-            stars.forEach((star, index) => {{
-                if (index < rating) {{
+            stars.forEach((star, index) => {
+                if (index < rating) {
                     star.classList.add('active');
-                }} else {{
+                } else {
                     star.classList.remove('active');
-                }}
-            }});
-        }}
+                }
+            });
+        }
 
-        function loadReviewsAndRating() {{
-            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {{}};
+        function loadReviewsAndRating() {
+            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {};
             
-            filmCards.forEach(card => {{
+            filmCards.forEach(card => {
                 const filmId = card.getAttribute('data-id');
                 const listContainer = document.getElementById('reviews-list-' + filmId);
                 const reviews = dbReviews[filmId] || [];
                 
                 listContainer.innerHTML = '';
-                if (reviews.length === 0) {{
+                if (reviews.length === 0) {
                     listContainer.innerHTML = '<div style="color: #6b7280; text-align: center; padding: 10px 0;">Отзывов пока нет. Станьте первым!</div>';
-                }} else {{
-                    reviews.forEach(r => {{
+                } else {
+                    reviews.forEach(r => {
                         const starsHtml = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
                         listContainer.innerHTML += `
                             <div class="review-item">
                                 <div class="review-header">
-                                    <span>${{r.author}}</span>
-                                    <span class="review-stars">${{starsHtml}}</span>
+                                    <span>${r.author}</span>
+                                    <span class="review-stars">${starsHtml}</span>
                                 </div>
-                                <div class="review-text">${{r.comment}}</div>
+                                <div class="review-text">${r.comment}</div>
                             </div>
                         `;
-                    }});
-                }}
+                    });
+                }
 
                 const ratingBadge = document.getElementById('rating-' + filmId);
-                if (reviews.length > 0) {{
+                if (reviews.length > 0) {
                     const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
                     const avg = (sum / reviews.length).toFixed(1);
-                    ratingBadge.innerHTML = `⭐ ${{avg}}/5 (${{reviews.length}} отз.)`;
-                }} else {{
+                    ratingBadge.innerHTML = `⭐ ${avg}/5 (${reviews.length} отз.)`;
+                } else {
                     ratingBadge.innerHTML = `⭐ -- (0 отзывов)`;
-                }}
-            }});
-        }}
+                }
+            });
+        }
 
-        function submitReview(filmId) {{
+        function submitReview(filmId) {
             const authorInput = document.getElementById('author-' + filmId);
             const commentInput = document.getElementById('comment-' + filmId);
             const rating = activeStarsData[filmId] || 0;
 
-            if (!authorInput.value.trim() || !commentInput.value.trim()) {{
+            if (!authorInput.value.trim() || !commentInput.value.trim()) {
                 alert('Заполните ваше имя и напишите отзыв.');
                 return;
-            }}
-            if (rating === 0) {{
+            }
+            if (rating === 0) {
                 alert('Поставьте оценку в звездах.');
                 return;
-            }}
+            }
 
             playClickSound(1000, 0.15);
 
-            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {{}};
+            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {};
             if (!dbReviews[filmId]) dbReviews[filmId] = [];
 
-            dbReviews[filmId].unshift({{
+            dbReviews[filmId].unshift({
                 author: authorInput.value.trim(),
                 comment: commentInput.value.trim(),
                 rating: rating
-            }});
+            });
 
             localStorage.setItem('filmsReviews', JSON.stringify(dbReviews));
 
@@ -743,51 +726,52 @@ with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f
             setFormStars(filmId, 0);
 
             loadReviewsAndRating();
-        }}
+        }
 
-        // --- 4. ПЛЕЕР MP4 (РАБОТАЕТ ВСЕГДА) ---
-        function openTrailer(videoUrl) {{
+        function openTrailer(videoUrl) {
             playClickSound(700, 0.08);
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('trailerPlayer');
             video.src = videoUrl;
             modal.classList.add('active');
             video.play().catch(e => console.log('Автовоспроизведение заблокировано браузером'));
-        }}
+        }
 
-        function closeTrailer() {{
+        function closeTrailer() {
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('trailerPlayer');
             video.pause();
             video.src = '';
             modal.classList.remove('active');
-        }}
+        }
 
-        document.addEventListener('DOMContentLoaded', () => {{
+        document.addEventListener('DOMContentLoaded', () => {
             const likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
             const likeButtons = document.querySelectorAll('.like-btn');
-            likeButtons.forEach(btn => {{
+            likeButtons.forEach(btn => {
                 const cardTitle = btn.closest('.film-card').querySelector('.film-title').innerText;
                 if (likedFilms.includes(cardTitle)) btn.classList.add('liked');
-            }});
+            });
 
             loadReviewsAndRating();
-        }});
+        });
     </script>
 </body>
-</html>''')
+</html>'''
 
-# 3. Создаем about.html
-with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f:
-    f.write(f'''<!DOCTYPE html>
+with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f:
+    f.write(genre_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
+
+# 3. Создаем about.html (Без использования f-строк)
+about_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>О проекте | Films_Iliaz Ultra</title>
     <style>
-        {SHARED_CSS}
-        .about-box {{ 
+        REPLACE_WITH_SHARED_CSS
+        .about-box { 
             text-align: center; 
             padding: 65px 35px; 
             max-width: 750px; 
@@ -797,20 +781,20 @@ with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f
             box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
             border: 1px solid rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(10px);
-        }}
-        .about-box p {{ 
+        }
+        .about-box p { 
             font-size: 1.25rem; 
             color: #9ca3af; 
             line-height: 1.75; 
-        }}
-        .tech-list {{
+        }
+        .tech-list {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin-top: 30px;
             flex-wrap: wrap;
-        }}
-        .tech-tag {{
+        }
+        .tech-tag {
             background: rgba(255, 46, 59, 0.15);
             color: #ff2e3b;
             padding: 8px 18px;
@@ -818,7 +802,7 @@ with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f
             font-weight: bold;
             font-size: 0.95rem;
             border: 1px solid rgba(255, 46, 59, 0.3);
-        }}
+        }
     </style>
 </head>
 <body>
@@ -842,9 +826,12 @@ with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f
         </div>
     </div>
 </body>
-</html>''')
+</html>'''
 
-print("[СУПЕР-УСПЕХ]: Инновационный развлекательный центр Films_Iliaz 10x Ultra полностью собран и запущен!")
+with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f:
+    f.write(about_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
+
+print("[СУПЕР-УСПЕХ]: Ошибки синтаксиса устранены! Приложение готово к запуску.")
 
 # --- МАРШРУТЫ FLASK ---
 @app.route('/')
