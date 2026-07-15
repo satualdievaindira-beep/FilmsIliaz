@@ -1,10 +1,9 @@
 import os
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
-# --- БАЗА ДАННЫХ ФИЛЬМОВ С НАДЕЖНЫМИ YOUTUBE ID (ТРЕЙЛЕРЫ И ПОЛНЫЕ ВЕРСИИ) ---
-# Все ID видеороликов протестированы и гарантированно разрешены для встраивания!
+# --- БАЗА ДАННЫХ ФИЛЬМОВ С ССЫЛКАМИ НА КИНОГО ---
 FILMS_DB = {
     'action': {
         'title': 'Боевики & Экшен',
@@ -16,7 +15,7 @@ FILMS_DB = {
                 'desc': 'В постапокалиптическом мире Макс объединяется с воительницей Фуриосой, чтобы сбежать от тирана Несмертного Джо.',
                 'image': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop',
                 'youtube_id': 'hEJnMQG9ld8',  # Трейлер
-                'full_movie_id': 'Qz8Y_8S6pOI'  # Полная лицензионная версия / обзорный фильм, доступный к встраиванию
+                'kinogo_url': 'https://kinogo.my/films/1230-bezumnyy-maks-doroga-yarosti-2026.html'  # Ссылка на просмотр
             },
             {
                 'id': 'john_wick',
@@ -24,8 +23,8 @@ FILMS_DB = {
                 'year': '2014',
                 'desc': 'История бывшего наемного убийцы, который возвращается в криминальный мир, чтобы жестоко отомстить за самое дорогое.',
                 'image': 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=500&auto=format&fit=crop',
-                'youtube_id': '2AUmvWm5ZDQ',  # Трейлер
-                'full_movie_id': '6zG8Ue0bO4E'  # Разрешенный к показу фильм / материалы на YouTube
+                'youtube_id': '2AUmvWm5ZDQ',
+                'kinogo_url': 'https://kinogo.my/films/1065-dzhon-uik-hd-mdb6-io6.html'
             }
         ]
     },
@@ -38,8 +37,8 @@ FILMS_DB = {
                 'year': '1990',
                 'desc': 'Маленький Кевин случайно остается один дома на Рождество и защищает свое жилище от двоих неуклюжих грабителей.',
                 'image': 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=500&auto=format&fit=crop',
-                'youtube_id': 'f7fepI8A60A',  # Трейлер
-                'full_movie_id': 'vO_G7H_Q3kY'  # Официальный бесплатный праздничный фильм-версия
+                'youtube_id': 'f7fepI8A60A',
+                'kinogo_url': 'https://kinogo.my/films/2617-odin-doma-2025.html'
             }
         ]
     },
@@ -52,8 +51,8 @@ FILMS_DB = {
                 'year': '2001',
                 'desc': 'Мальчик-сирота узнает, что он волшебник, и отправляется учиться в знаменитую школу магии Хогвартс.',
                 'image': 'https://images.unsplash.com/photo-1598153346810-860daa814c4b?q=80&w=500&auto=format&fit=crop',
-                'youtube_id': 'mNgwNXKafMc',  # Трейлер
-                'full_movie_id': 'y8Wp8N_gB2I'  # Свободный к встраиванию фан-фильм высокого качества по вселенной
+                'youtube_id': 'mNgwNXKafMc',
+                'kinogo_url': 'https://kinogo.my/films/2617-odin-doma-2025.html'  # Временная заглушка
             }
         ]
     }
@@ -67,7 +66,6 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 if not os.path.exists(TEMPLATES_DIR): os.makedirs(TEMPLATES_DIR)
 if not os.path.exists(STATIC_DIR): os.makedirs(STATIC_DIR)
 
-# Единый дизайн (CSS)
 SHARED_CSS = '''
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;800&display=swap');
 
@@ -144,7 +142,7 @@ nav a:hover {
 }
 '''
 
-# 1. Создаем index.html (Без f-строк)
+# 1. index.html
 index_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -208,7 +206,7 @@ index_html_template = '''<!DOCTYPE html>
     </nav>
     <div class="hero">
         <h1>Films_Iliaz <span class="accent">Ultra 10x</span></h1>
-        <p>Добро пожаловать на абсолютно новую, полностью переработанную развлекательную платформу. Высокая скорость работы, живые отзывы, встроенный YouTube плеер и чистый дизайн.</p>
+        <p>Добро пожаловать на абсолютно новую, полностью переработанную развлекательную платформу. Высокая скорость работы, живые отзывы, встроенный плеер и чистый дизайн.</p>
         <a href="/genre/action" class="browse-btn">Войти в медиатеку</a>
     </div>
 </body>
@@ -217,7 +215,7 @@ index_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(index_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-# 2. Создаем genre.html (Без f-строк)
+# 2. genre.html (С ПОДДЕРЖКОЙ ССЫЛОК КИНОГО В ПЛЕЕРЕ)
 genre_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -604,17 +602,16 @@ genre_html_template = '''<!DOCTYPE html>
                     </div>
                     <p class="film-desc">{{ film.desc }}</p>
                     
-                    <!-- КНОПКА СМОТРЕТЬ ФИЛЬМ ЦЕЛИКОМ -->
-                    <button class="play-movie-btn" onclick="openPlayer('{{ film.full_movie_id }}')">🎬 Смотреть фильм</button>
+                    <!-- КНОПКА СМОТРЕТЬ ФИЛЬМ (СТРИМИНГ С КИНОГО) -->
+                    <button class="play-movie-btn" onclick="openKinogoPlayer('{{ film.kinogo_url }}')">🎬 Смотреть фильм</button>
 
                     <div class="button-group">
-                        <button class="watch-btn" onclick="openPlayer('{{ film.youtube_id }}')">▶ Трейлер</button>
+                        <button class="watch-btn" onclick="openYoutubePlayer('{{ film.youtube_id }}')">▶ Трейлер</button>
                         <button class="reviews-toggle-btn" onclick="toggleReviews('{{ film.id }}')">💬 Отзывы</button>
                     </div>
 
                     <div class="reviews-panel" id="reviews-panel-{{ film.id }}">
                         <div class="reviews-list" id="reviews-list-{{ film.id }}"></div>
-                        
                         <div class="typing-status" id="typing-status-{{ film.id }}"></div>
 
                         <div class="review-form">
@@ -639,7 +636,7 @@ genre_html_template = '''<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ЕДИНЫЙ КИНОТЕАТР ПЛЕЕР -->
+    <!-- ЕДИНЫЙ ПЛЕЕР ДЛЯ ВИДЕО -->
     <div class="modal" id="videoModal" onclick="closePlayer()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-modal" onclick="closePlayer()">&times;</span>
@@ -750,10 +747,10 @@ genre_html_template = '''<!DOCTYPE html>
                         listContainer.innerHTML += `
                             <div class="review-item">
                                 <div class="review-header">
-                                    <span>${r.author}</span>
-                                    <span class="review-stars">${starsHtml}</span>
+                                    <span>\${r.author}</span>
+                                    <span class="review-stars">\${starsHtml}</span>
                                 </div>
-                                <div class="review-text">${r.comment}</div>
+                                <div class="review-text">\${r.comment}</div>
                             </div>
                         `;
                     });
@@ -763,7 +760,7 @@ genre_html_template = '''<!DOCTYPE html>
                 if (reviews.length > 0) {
                     const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
                     const avg = (sum / reviews.length).toFixed(1);
-                    ratingBadge.innerHTML = `⭐ ${avg}/5 (${reviews.length} отз.)`;
+                    ratingBadge.innerHTML = `⭐ \${avg}/5 (\${reviews.length} отз.)`;
                     card.setAttribute('data-rating', avg);
                 } else {
                     ratingBadge.innerHTML = `⭐ -- (0 отзывов)`;
@@ -813,13 +810,21 @@ genre_html_template = '''<!DOCTYPE html>
             loadReviewsAndRating();
         }
 
-        // ЕДИНАЯ ФУНКЦИЯ ОТКРЫТИЯ ПЛЕЕРА ДЛЯ ТРЕЙЛЕРОВ И ПОЛНЫХ ФИЛЬМОВ
-        function openPlayer(videoId) {
+        // ОТКРЫТИЕ ТРЕЙЛЕРА С YOUTUBE
+        function openYoutubePlayer(videoId) {
             playClickSound(700, 0.08);
             const modal = document.getElementById('videoModal');
             const iframe = document.getElementById('videoPlayer');
-            
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+            iframe.src = `https://www.youtube.com/embed/\${videoId}?autoplay=1&rel=0`;
+            modal.classList.add('active');
+        }
+
+        // ОТКРЫТИЕ ПЛЕЕРА КИНОГО (ВСТРАИВАНИЕ ССЫЛКИ В СТРАНИЦУ)
+        function openKinogoPlayer(url) {
+            playClickSound(750, 0.08);
+            const modal = document.getElementById('videoModal');
+            const iframe = document.getElementById('videoPlayer');
+            iframe.src = url;
             modal.classList.add('active');
         }
 
@@ -856,9 +861,13 @@ genre_html_template = '''<!DOCTYPE html>
         document.addEventListener('DOMContentLoaded', () => {
             const likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
             const likeButtons = document.querySelectorAll('.like-btn');
+            
             likeButtons.forEach(btn => {
-                const cardTitle = btn.closest('.film-card').querySelector('.film-title').innerText;
-                if (likedFilms.includes(cardTitle)) btn.classList.add('liked');
+                const card = btn.closest('.film-card');
+                const title = card.querySelector('.film-title').innerText;
+                if (likedFilms.includes(title)) {
+                    btn.classList.add('liked');
+                }
             });
 
             loadReviewsAndRating();
@@ -870,47 +879,27 @@ genre_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f:
     f.write(genre_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-# 3. Создаем about.html (Без f-строк)
+# 3. about.html (СТРАНИЦА О ПРОЕКТЕ)
 about_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>О проекте | Films_Iliaz Ultra</title>
+    <title>О проекте | Films_Iliaz</title>
     <style>
         REPLACE_WITH_SHARED_CSS
-        .about-box { 
-            text-align: center; 
-            padding: 65px 35px; 
-            max-width: 750px; 
-            margin: 50px auto 0; 
+        .about-box {
             background: rgba(18, 18, 22, 0.85); 
             border-radius: 24px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+            padding: 40px;
+            max-width: 800px;
+            margin: 50px auto;
             border: 1px solid rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+            text-align: center;
         }
-        .about-box p { 
-            font-size: 1.25rem; 
-            color: #9ca3af; 
-            line-height: 1.75; 
-        }
-        .tech-list {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        .tech-tag {
-            background: rgba(255, 46, 59, 0.15);
-            color: #ff2e3b;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            border: 1px solid rgba(255, 46, 59, 0.3);
-        }
+        h1 { margin-top: 0; }
+        p { color: #9ca3af; line-height: 1.8; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -923,14 +912,9 @@ about_html_template = '''<!DOCTYPE html>
     </nav>
     <div class="container">
         <div class="about-box">
-            <h1>Киноплатформа <span class="accent">Films_Iliaz 10x Ultra</span></h1>
-            <p>Это ультимативно переработанное веб-приложение, созданное Ильязом. Все ошибки устранены, плеер воспроизводит плавные превью без блокировок, а инновационный дизайн и Web Audio звуки погружают в атмосферу цифрового домашнего кинотеатра.</p>
-            <div class="tech-list">
-                <span class="tech-tag">YouTube Inline Player</span>
-                <span class="tech-tag">Dynamic Review Engine</span>
-                <span class="tech-tag">Typing Status Indicator</span>
-                <span class="tech-tag">Live Sorting Filter</span>
-            </div>
+            <h1>О проекте <span class="accent">Films_Iliaz</span></h1>
+            <p>Это приватная кинематографическая платформа нового поколения. Мы объединили стильный футуристический интерфейс с высокой скоростью работы и возможностью смотреть любимые фильмы во встроенном проигрывателе.</p>
+            <p>Наш проект активно развивается, впереди еще много крутых фич!</p>
         </div>
     </div>
 </body>
@@ -939,24 +923,30 @@ about_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f:
     f.write(about_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-print("[СУПЕР-УСПЕХ]: Все файлы проекта с поддержкой полных фильмов успешно обновлены!")
 
-# --- МАРШРУТЫ FLASK ---
+# --- РОУТЫ (МАРШРУТЫ) FLASK ---
+
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
+
+@app.route('/genre/<genre_name>')
+def genre(genre_name):
+    # Получаем данные о жанре из базы данных
+    genre_data = FILMS_DB.get(genre_name)
+    if not genre_data:
+        return "Жанр не найден", 404
+    
+    return render_template(
+        'genre.html', 
+        genre_title=genre_data['title'], 
+        films=genre_data['list']
+    )
 
 @app.route('/about')
 def about():
     return render_template('about.html')
 
-@app.route('/genre/<genre_name>')
-def genre(genre_name):
-    if genre_name in FILMS_DB:
-        data = FILMS_DB[genre_name]
-        return render_template('genre.html', genre_title=data['title'], films=data['list'])
-    else:
-        return "Жанр не найден", 404
-
 if __name__ == '__main__':
+    # Оставляем порт по умолчанию для локального тестирования
     app.run(debug=True)
