@@ -3,7 +3,8 @@ from flask import Flask, render_template, url_for
 
 app = Flask(__name__)
 
-# --- БАЗА ДАННЫХ ФИЛЬМОВ С ПРЯМЫМИ ВИДЕОССЫЛКАМИ ---
+# --- БАЗА ДАННЫХ ФИЛЬМОВ С РАБОЧИМИ YOUTUBE ID ---
+# Вместо прямых видеофайлов используем ID видео с YouTube (код после watch?v=)
 FILMS_DB = {
     'action': {
         'title': 'Боевики & Экшен',
@@ -14,7 +15,7 @@ FILMS_DB = {
                 'year': '2015',
                 'desc': 'В постапокалиптическом мире Макс объединяется с воительницей Фуриосой, чтобы сбежать от тирана Несмертного Джо.',
                 'image': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop',
-                'video_url': 'https://assets.mixkit.co/videos/preview/mixkit-fire-burning-in-the-desert-41552-large.mp4'
+                'youtube_id': 'hEJnMQG9ld8' # Официальный трейлер на YouTube
             },
             {
                 'id': 'john_wick',
@@ -22,7 +23,7 @@ FILMS_DB = {
                 'year': '2014',
                 'desc': 'История бывшего наемного убийцы, который возвращается в криминальный мир, чтобы жестоко отомстить за самое дорогое.',
                 'image': 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=500&auto=format&fit=crop',
-                'video_url': 'https://assets.mixkit.co/videos/preview/mixkit-man-holding-a-clockwork-clock-41618-large.mp4'
+                'youtube_id': '2AUmvWm5ZDQ'
             }
         ]
     },
@@ -35,7 +36,7 @@ FILMS_DB = {
                 'year': '1990',
                 'desc': 'Маленький Кевин случайно остается один дома на Рождество и защищает свое жилище от двоих неуклюжих грабителей.',
                 'image': 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=500&auto=format&fit=crop',
-                'video_url': 'https://assets.mixkit.co/videos/preview/mixkit-cozy-fireplace-with-christmas-decorations-41584-large.mp4'
+                'youtube_id': 'f7fepI8A60A'
             }
         ]
     },
@@ -48,7 +49,7 @@ FILMS_DB = {
                 'year': '2001',
                 'desc': 'Мальчик-сирота узнает, что он волшебник, и отправляется учиться в знаменитую школу магии Хогвартс.',
                 'image': 'https://images.unsplash.com/photo-1598153346810-860daa814c4b?q=80&w=500&auto=format&fit=crop',
-                'video_url': 'https://assets.mixkit.co/videos/preview/mixkit-wizard-casting-a-spell-with-a-magic-wand-41629-large.mp4'
+                'youtube_id': 'VyHV0BRZKoI'
             }
         ]
     }
@@ -139,7 +140,7 @@ nav a:hover {
 }
 '''
 
-# 1. Создаем index.html (Без использования f-строк)
+# 1. Создаем index.html (Без f-строк)
 index_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -203,7 +204,7 @@ index_html_template = '''<!DOCTYPE html>
     </nav>
     <div class="hero">
         <h1>Films_Iliaz <span class="accent">Ultra 10x</span></h1>
-        <p>Добро пожаловать на абсолютно новую, полностью переработанную развлекательную платформу. Высокая скорость работы, живые отзывы, встроенный плеер и чистый дизайн.</p>
+        <p>Добро пожаловать на абсолютно новую, полностью переработанную развлекательную платформу. Высокая скорость работы, живые отзывы, встроенный YouTube плеер и чистый дизайн.</p>
         <a href="/genre/action" class="browse-btn">Войти в медиатеку</a>
     </div>
 </body>
@@ -212,7 +213,7 @@ index_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(index_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-# 2. Создаем genre.html (Без использования f-строк)
+# 2. Создаем genre.html (Без f-строк)
 genre_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -225,15 +226,16 @@ genre_html_template = '''<!DOCTYPE html>
         
         .tools-panel {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             gap: 15px;
             margin: 30px 0;
+            flex-wrap: wrap;
         }
         .search-input {
             width: 100%;
-            max-width: 500px;
-            padding: 15px 25px;
+            max-width: 400px;
+            padding: 12px 25px;
             border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             background-color: rgba(20, 20, 25, 0.8);
@@ -247,6 +249,20 @@ genre_html_template = '''<!DOCTYPE html>
             border-color: #ff2e3b;
             box-shadow: 0 0 20px rgba(255, 46, 59, 0.4);
             background-color: rgba(25, 25, 32, 0.9);
+        }
+        
+        .sort-select {
+            padding: 12px 20px;
+            border-radius: 30px;
+            background-color: rgba(20, 20, 25, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .sort-select:focus {
+            border-color: #ff2e3b;
         }
 
         .films-grid { 
@@ -425,6 +441,15 @@ genre_html_template = '''<!DOCTYPE html>
         .review-stars { color: #ffb800; }
         .review-text { color: #e5e7eb; line-height: 1.5; font-size: 0.9rem; }
         
+        .typing-status {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-style: italic;
+            height: 18px;
+            margin-bottom: 5px;
+            display: none;
+        }
+
         .review-form {
             display: flex;
             flex-direction: column;
@@ -474,6 +499,7 @@ genre_html_template = '''<!DOCTYPE html>
             color: white;
         }
 
+        /* КРАСИВЫЙ MODAL ДЛЯ YOUTUBE ПЛЕЕРА */
         .modal {
             display: none;
             position: fixed;
@@ -500,8 +526,8 @@ genre_html_template = '''<!DOCTYPE html>
             box-shadow: 0 0 60px rgba(255, 46, 59, 0.4);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .modal-content video {
-            width: 100%; height: 100%; object-fit: cover;
+        .modal-content iframe {
+            width: 100%; height: 100%; border: none;
         }
         .close-modal {
             position: absolute;
@@ -530,13 +556,20 @@ genre_html_template = '''<!DOCTYPE html>
     <div class="container">
         <h1>Жанр: <span class="accent">{{ genre_title }}</span></h1>
         
+        <!-- ПАНЕЛЬ ПОИСКА И СОРТИРОВКИ -->
         <div class="tools-panel">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Быстрый поиск по названию фильма...">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Быстрый поиск по названию...">
+            <select id="sortSelect" class="sort-select" onchange="sortFilms()">
+                <option value="default">Сортировка по умолчанию</option>
+                <option value="year-desc">Сначала новые (по году)</option>
+                <option value="year-asc">Сначала старые (по году)</option>
+                <option value="rating-desc">По высокому рейтингу</option>
+            </select>
         </div>
 
         <div class="films-grid" id="filmsGrid">
             {% for film in films %}
-            <div class="film-card" data-id="{{ film.id }}" data-title="{{ film.title | lower }}">
+            <div class="film-card" data-id="{{ film.id }}" data-title="{{ film.title | lower }}" data-year="{{ film.year }}" data-rating="0">
                 <div class="film-poster-wrapper">
                     <button class="like-btn" onclick="toggleLike(this, '{{ film.title }}')">❤</button>
                     <img src="{{ film.image }}" alt="{{ film.title }}" class="film-poster">
@@ -550,16 +583,19 @@ genre_html_template = '''<!DOCTYPE html>
                     <p class="film-desc">{{ film.desc }}</p>
                     
                     <div class="button-group">
-                        <button class="watch-btn" onclick="openTrailer('{{ film.video_url }}')">▶ Трейлер</button>
+                        <button class="watch-btn" onclick="openTrailer('{{ film.youtube_id }}')">▶ Трейлер</button>
                         <button class="reviews-toggle-btn" onclick="toggleReviews('{{ film.id }}')">💬 Отзывы</button>
                     </div>
 
                     <div class="reviews-panel" id="reviews-panel-{{ film.id }}">
                         <div class="reviews-list" id="reviews-list-{{ film.id }}"></div>
                         
+                        <!-- Статус набора текста -->
+                        <div class="typing-status" id="typing-status-{{ film.id }}"></div>
+
                         <div class="review-form">
                             <div class="review-form-row">
-                                <input type="text" id="author-{{ film.id }}" placeholder="Ваше имя" required style="flex-grow: 1;">
+                                <input type="text" id="author-{{ film.id }}" placeholder="Ваше имя" oninput="updateTypingStatus('{{ film.id }}')" required style="flex-grow: 1;">
                                 <div class="star-rating-select" id="star-select-{{ film.id }}">
                                     <span onclick="setFormStars('{{ film.id }}', 1)">★</span>
                                     <span onclick="setFormStars('{{ film.id }}', 2)">★</span>
@@ -568,7 +604,7 @@ genre_html_template = '''<!DOCTYPE html>
                                     <span onclick="setFormStars('{{ film.id }}', 5)">★</span>
                                 </div>
                             </div>
-                            <textarea id="comment-{{ film.id }}" placeholder="Поделитесь вашим впечатлением..." rows="2" required></textarea>
+                            <textarea id="comment-{{ film.id }}" placeholder="Поделитесь вашим впечатлением..." rows="2" oninput="updateTypingStatus('{{ film.id }}')" required></textarea>
                             <button class="submit-review-btn" onclick="submitReview('{{ film.id }}')">Отправить отзыв</button>
                         </div>
                     </div>
@@ -579,10 +615,11 @@ genre_html_template = '''<!DOCTYPE html>
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО С ПОДДЕРЖКОЙ IFRAME YOUTUBE -->
     <div class="modal" id="videoModal" onclick="closeTrailer()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-modal" onclick="closeTrailer()">&times;</span>
-            <video id="trailerPlayer" controls autoplay></video>
+            <iframe id="trailerPlayer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
 
@@ -643,6 +680,21 @@ genre_html_template = '''<!DOCTYPE html>
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
+        // Индикатор набора текста ("Печатает...")
+        function updateTypingStatus(filmId) {
+            const name = document.getElementById('author-' + filmId).value.trim();
+            const comment = document.getElementById('comment-' + filmId).value.trim();
+            const statusDiv = document.getElementById('typing-status-' + filmId);
+            
+            if (comment.length > 0) {
+                const displayName = name ? name : "Кто-то";
+                statusDiv.innerText = displayName + " пишет отзыв...";
+                statusDiv.style.display = "block";
+            } else {
+                statusDiv.style.display = "none";
+            }
+        }
+
         function setFormStars(filmId, rating) {
             playClickSound(500 + (rating * 50), 0.05);
             activeStarsData[filmId] = rating;
@@ -668,6 +720,7 @@ genre_html_template = '''<!DOCTYPE html>
                 listContainer.innerHTML = '';
                 if (reviews.length === 0) {
                     listContainer.innerHTML = '<div style="color: #6b7280; text-align: center; padding: 10px 0;">Отзывов пока нет. Станьте первым!</div>';
+                    card.setAttribute('data-rating', '0');
                 } else {
                     reviews.forEach(r => {
                         const starsHtml = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
@@ -688,23 +741,32 @@ genre_html_template = '''<!DOCTYPE html>
                     const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
                     const avg = (sum / reviews.length).toFixed(1);
                     ratingBadge.innerHTML = `⭐ ${avg}/5 (${reviews.length} отз.)`;
+                    card.setAttribute('data-rating', avg);
                 } else {
                     ratingBadge.innerHTML = `⭐ -- (0 отзывов)`;
+                    card.setAttribute('data-rating', '0');
                 }
             });
         }
 
+        // РАЗДЕЛЬНЫЕ И ЧЕТКИЕ ПРОВЕРКИ ОТПРАВКИ ОТЗЫВА
         function submitReview(filmId) {
             const authorInput = document.getElementById('author-' + filmId);
             const commentInput = document.getElementById('comment-' + filmId);
             const rating = activeStarsData[filmId] || 0;
 
-            if (!authorInput.value.trim() || !commentInput.value.trim()) {
-                alert('Заполните ваше имя и напишите отзыв.');
+            if (!authorInput.value.trim()) {
+                alert('Пожалуйста, введите ваше имя!');
                 return;
             }
+
+            if (!commentInput.value.trim()) {
+                alert('Пожалуйста, напишите текст отзыва!');
+                return;
+            }
+
             if (rating === 0) {
-                alert('Поставьте оценку в звездах.');
+                alert('Пожалуйста, выберите оценку (нажмите на звёздочки).');
                 return;
             }
 
@@ -723,26 +785,52 @@ genre_html_template = '''<!DOCTYPE html>
 
             authorInput.value = '';
             commentInput.value = '';
+            document.getElementById('typing-status-' + filmId).style.display = "none";
             setFormStars(filmId, 0);
 
             loadReviewsAndRating();
         }
 
-        function openTrailer(videoUrl) {
+        // ОТКРЫТИЕ YOUTUBE ТРЕЙЛЕРА (РАБОТАЕТ БЕЗ СБОЕВ)
+        function openTrailer(youtubeId) {
             playClickSound(700, 0.08);
             const modal = document.getElementById('videoModal');
-            const video = document.getElementById('trailerPlayer');
-            video.src = videoUrl;
+            const iframe = document.getElementById('trailerPlayer');
+            
+            // Загружаем плеер с автовоспроизведением и скрытием лишних элементов интерфейса YouTube
+            iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`;
             modal.classList.add('active');
-            video.play().catch(e => console.log('Автовоспроизведение заблокировано браузером'));
         }
 
         function closeTrailer() {
             const modal = document.getElementById('videoModal');
-            const video = document.getElementById('trailerPlayer');
-            video.pause();
-            video.src = '';
+            const iframe = document.getElementById('trailerPlayer');
+            iframe.src = ''; // Останавливаем воспроизведение при закрытии
             modal.classList.remove('active');
+        }
+
+        // ФУНКЦИЯ СОРТИРОВКИ ФИЛЬМОВ
+        function sortFilms() {
+            const criteria = document.getElementById('sortSelect').value;
+            const grid = document.getElementById('filmsGrid');
+            const items = Array.from(grid.querySelectorAll('.film-card'));
+
+            if (criteria === 'default') {
+                loadReviewsAndRating();
+                return;
+            }
+
+            items.sort((a, b) => {
+                if (criteria === 'year-desc') {
+                    return parseInt(b.getAttribute('data-year')) - parseInt(a.getAttribute('data-year'));
+                } else if (criteria === 'year-asc') {
+                    return parseInt(a.getAttribute('data-year')) - parseInt(b.getAttribute('data-year'));
+                } else if (criteria === 'rating-desc') {
+                    return parseFloat(b.getAttribute('data-rating')) - parseFloat(a.getAttribute('data-rating'));
+                }
+            });
+
+            items.forEach(item => grid.appendChild(item));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -762,7 +850,7 @@ genre_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f:
     f.write(genre_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-# 3. Создаем about.html (Без использования f-строк)
+# 3. Создаем about.html (Без f-строк)
 about_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -818,10 +906,10 @@ about_html_template = '''<!DOCTYPE html>
             <h1>Киноплатформа <span class="accent">Films_Iliaz 10x Ultra</span></h1>
             <p>Это ультимативно переработанное веб-приложение, созданное Ильязом. Все ошибки устранены, плеер воспроизводит плавные превью без блокировок, а инновационный дизайн и Web Audio звуки погружают в атмосферу цифрового домашнего кинотеатра.</p>
             <div class="tech-list">
-                <span class="tech-tag">HTML5 Native Video</span>
-                <span class="tech-tag">Web Audio API Effects</span>
+                <span class="tech-tag">YouTube Inline Player</span>
                 <span class="tech-tag">Dynamic Review Engine</span>
-                <span class="tech-tag">Glassmorphic Space Background</span>
+                <span class="tech-tag">Typing Status Indicator</span>
+                <span class="tech-tag">Live Sorting Filter</span>
             </div>
         </div>
     </div>
@@ -831,7 +919,7 @@ about_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f:
     f.write(about_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-print("[СУПЕР-УСПЕХ]: Ошибки синтаксиса устранены! Приложение готово к запуску.")
+print("[СУПЕР-УСПЕХ]: Все файлы и шаблоны созданы без синтаксических конфликтов!")
 
 # --- МАРШРУТЫ FLASK ---
 @app.route('/')
