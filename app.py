@@ -3,7 +3,7 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-# --- БАЗА ДАННЫХ ФИЛЬМОВ С ССЫЛКАМИ НА КИНОГО ---
+# --- БАЗА ДАННЫХ ФИЛЬМОВ С ТВОИМИ ССЫЛКАМИ И КАРТИНКАМИ ---
 FILMS_DB = {
     'action': {
         'title': 'Боевики & Экшен',
@@ -13,7 +13,7 @@ FILMS_DB = {
                 'title': 'Безумный Макс: Дорога ярости',
                 'year': '2015',
                 'desc': 'В постапокалиптическом мире Макс объединяется с воительницей Фуриосой, чтобы сбежать от тирана Несмертного Джо.',
-                'image': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-08/1565436329-300931421-bezumnyy-maks-doroga-yarosti.jpg',  # Оригинальный баннер
                 'youtube_id': 'hEJnMQG9ld8',  # Трейлер
                 'kinogo_url': 'https://kinogo.my/films/1230-bezumnyy-maks-doroga-yarosti-2026.html'  # Ссылка на просмотр
             },
@@ -22,7 +22,7 @@ FILMS_DB = {
                 'title': 'Джон Уик',
                 'year': '2014',
                 'desc': 'История бывшего наемного убийцы, который возвращается в криминальный мир, чтобы жестоко отомстить за самое дорогое.',
-                'image': 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-07/1562092879-1783019840-dzhon-uik.jpg',  # Твой новый баннер для Джона Уика
                 'youtube_id': '2AUmvWm5ZDQ',
                 'kinogo_url': 'https://kinogo.my/films/1065-dzhon-uik-hd-mdb6-io6.html'
             }
@@ -36,7 +36,7 @@ FILMS_DB = {
                 'title': 'Один дома',
                 'year': '1990',
                 'desc': 'Маленький Кевин случайно остается один дома на Рождество и защищает свое жилище от двоих неуклюжих грабителей.',
-                'image': 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-12/1577714595-1650178410-odin-doma.jpg',  # Твой новый баннер для Один дома
                 'youtube_id': 'f7fepI8A60A',
                 'kinogo_url': 'https://kinogo.my/films/2617-odin-doma-2025.html'
             }
@@ -52,7 +52,7 @@ FILMS_DB = {
                 'desc': 'Мальчик-сирота узнает, что он волшебник, и отправляется учиться в знаменитую школу магии Хогвартс.',
                 'image': 'https://images.unsplash.com/photo-1598153346810-860daa814c4b?q=80&w=500&auto=format&fit=crop',
                 'youtube_id': 'mNgwNXKafMc',
-                'kinogo_url': 'https://kinogo.my/films/2617-odin-doma-2025.html'  # Временная заглушка
+                'kinogo_url': 'https://kinogo.my/films/2617-odin-doma-2025.html'  # Заглушка
             }
         ]
     }
@@ -215,7 +215,7 @@ index_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(index_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-# 2. genre.html (С ПОДДЕРЖКОЙ ССЫЛОК КИНОГО В ПЛЕЕРЕ)
+# 2. genre.html
 genre_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -602,7 +602,7 @@ genre_html_template = '''<!DOCTYPE html>
                     </div>
                     <p class="film-desc">{{ film.desc }}</p>
                     
-                    <!-- КНОПКА СМОТРЕТЬ ФИЛЬМ (СТРИМИНГ С КИНОГО) -->
+                    <!-- КНОПКА СМОТРЕТЬ ФИЛЬМ -->
                     <button class="play-movie-btn" onclick="openKinogoPlayer('{{ film.kinogo_url }}')">🎬 Смотреть фильм</button>
 
                     <div class="button-group">
@@ -636,7 +636,7 @@ genre_html_template = '''<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ЕДИНЫЙ ПЛЕЕР ДЛЯ ВИДЕО -->
+    <!-- ЕДИНЫЙ ПЛЕЕР -->
     <div class="modal" id="videoModal" onclick="closePlayer()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-modal" onclick="closePlayer()">&times;</span>
@@ -810,7 +810,6 @@ genre_html_template = '''<!DOCTYPE html>
             loadReviewsAndRating();
         }
 
-        // ОТКРЫТИЕ ТРЕЙЛЕРА С YOUTUBE
         function openYoutubePlayer(videoId) {
             playClickSound(700, 0.08);
             const modal = document.getElementById('videoModal');
@@ -819,7 +818,6 @@ genre_html_template = '''<!DOCTYPE html>
             modal.classList.add('active');
         }
 
-        // ОТКРЫТИЕ ПЛЕЕРА КИНОГО (ВСТРАИВАНИЕ ССЫЛКИ В СТРАНИЦУ)
         function openKinogoPlayer(url) {
             playClickSound(750, 0.08);
             const modal = document.getElementById('videoModal');
@@ -879,7 +877,7 @@ genre_html_template = '''<!DOCTYPE html>
 with open(os.path.join(TEMPLATES_DIR, 'genre.html'), 'w', encoding='utf-8') as f:
     f.write(genre_html_template.replace('REPLACE_WITH_SHARED_CSS', SHARED_CSS))
 
-# 3. about.html (СТРАНИЦА О ПРОЕКТЕ)
+# 3. about.html
 about_html_template = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -932,7 +930,6 @@ def index():
 
 @app.route('/genre/<genre_name>')
 def genre(genre_name):
-    # Получаем данные о жанре из базы данных
     genre_data = FILMS_DB.get(genre_name)
     if not genre_data:
         return "Жанр не найден", 404
@@ -948,5 +945,4 @@ def about():
     return render_template('about.html')
 
 if __name__ == '__main__':
-    # Оставляем порт по умолчанию для локального тестирования
     app.run(debug=True)
