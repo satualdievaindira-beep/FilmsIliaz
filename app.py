@@ -3,7 +3,7 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-# --- РАСШИРЕННАЯ БАЗА ДАННЫХ ФИЛЬМОВ ---
+# --- РАСШИРЕННАЯ БАЗА ДАННЫХ ФИЛЬМОВ С БАННЕРАМИ С КИНОГО ---
 FILMS_DB = {
     'action': {
         'title': 'Боевики & Экшен',
@@ -31,7 +31,7 @@ FILMS_DB = {
                 'title': 'Темный рыцарь',
                 'year': '2008',
                 'desc': 'Бэтмен поднимает ставки в войне с криминалом. С помощью лейтенанта Джима Гордона и прокурора Харви Дента он намерен очистить Готэм.',
-                'image': 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-07/1563273397-628424754-temnyy-rycar.jpg',
                 'youtube_id': 'EXeTwQWrcwY',
                 'kinogo_url': 'https://kinogo.my/films/2070-temnyy-rycar-2008.html'
             },
@@ -40,7 +40,7 @@ FILMS_DB = {
                 'title': 'Гладиатор',
                 'year': '2000',
                 'desc': 'В великой Римской империи не было военачальника, равного генералу Максимусу. Но предательство превращает его в раба-гладиатора.',
-                'image': 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-07/1563275753-462319047-gladiator.jpg',
                 'youtube_id': 'P5ieIbInFpg',
                 'kinogo_url': 'https://kinogo.my/films/2088-gladiator-2000.html'
             },
@@ -49,7 +49,7 @@ FILMS_DB = {
                 'title': 'Матрица',
                 'year': '1999',
                 'desc': 'Жизнь Томаса Андерсона разделена на две части: днем он обычный программист, а ночью — хакер Нео. Но однажды все меняется.',
-                'image': 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-07/1563273413-1785507519-matrica.jpg',
                 'youtube_id': 'm8e-FF8MsqU',
                 'kinogo_url': 'https://kinogo.my/films/2045-matrica-1999.html'
             }
@@ -72,7 +72,7 @@ FILMS_DB = {
                 'title': 'Мальчишник в Вегасе',
                 'year': '2009',
                 'desc': 'Четверо друзей устраивают безбашенный мальчишник в Лас-Вегасе. Утром они просыпаются и не могут вспомнить абсолютно ничего.',
-                'image': 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-08/1565181745-1815344315-malchishnik-v-vegase.jpg',
                 'youtube_id': 'tcdUjAybleA',
                 'kinogo_url': 'https://kinogo.my/films/2350-malchishnik-v-vegase-2009.html'
             },
@@ -81,7 +81,7 @@ FILMS_DB = {
                 'title': 'Маска',
                 'year': '1994',
                 'desc': 'Скромный банковский служащий находит волшебную маску, которая превращает его в неуязвимое и безумное мультяшное существо.',
-                'image': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2020-02/1582200236-47671842-maska.jpg',
                 'youtube_id': 'hOqWS2uJeQU',
                 'kinogo_url': 'https://kinogo.my/films/3120-maska-1994.html'
             },
@@ -90,7 +90,7 @@ FILMS_DB = {
                 'title': '1+1 (Неприкасаемые)',
                 'year': '2011',
                 'desc': 'Пострадавший в результате несчастного случая аристократ Филипп нанимает в качестве помощника человека, который менее всего подходит для этой работы.',
-                'image': 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-08/1566411516-2001155986-11.jpg',
                 'youtube_id': '0aR8t76MmEE',
                 'kinogo_url': 'https://kinogo.my/films/1410-1-plyus-1-2011.html'
             },
@@ -99,7 +99,7 @@ FILMS_DB = {
                 'title': 'Главный герой',
                 'year': '2021',
                 'desc': 'У сотрудника крупного банка всё идёт по плану, пока он не выясняет, что окружающий его мир — это часть видеоигры.',
-                'image': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2021-09/1632731885-308696803-glavnyy-geroy.jpg',
                 'youtube_id': 'X2m-0sM-s1E',
                 'kinogo_url': 'https://kinogo.my/films/4450-glavnyy-geroy-2021.html'
             }
@@ -113,7 +113,7 @@ FILMS_DB = {
                 'title': 'Гарри Поттер и Философский камень',
                 'year': '2001',
                 'desc': 'Мальчик-сирота узнает, что он волшебник, и отправляется учиться в знаменитую школу магии Хогвартс.',
-                'image': 'https://images.unsplash.com/photo-1598153346810-860daa814c4b?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-12/1575459380-459815049-garri-potter-i-filosofskiy-kamen.jpg',
                 'youtube_id': 'mNgwNXKafMc',
                 'kinogo_url': 'https://kinogo.my/films/2540-garri-potter-1.html'
             },
@@ -122,7 +122,7 @@ FILMS_DB = {
                 'title': 'Интерстеллар',
                 'year': '2014',
                 'desc': 'Когда засуха приводит человечество к продовольственному кризису, коллектив исследователей отправляется сквозь червоточину.',
-                'image': 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-07/1563271118-1856372554-interstellar.jpg',
                 'youtube_id': 'zSWdZVtXT7E',
                 'kinogo_url': 'https://kinogo.my/films/1120-interstellar-2014.html'
             },
@@ -131,7 +131,7 @@ FILMS_DB = {
                 'title': 'Аватар',
                 'year': '2009',
                 'desc': 'Бывший морской пехотинец Джейк Салли парализован. Он получает задание совершить путешествие вглубь планеты Пандора.',
-                'image': 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2020-01/1579717758-2041261314-avatar.jpg',
                 'youtube_id': '5PSNL1qE6VY',
                 'kinogo_url': 'https://kinogo.my/films/3005-avatar-2009.html'
             },
@@ -140,7 +140,7 @@ FILMS_DB = {
                 'title': 'Властелин колец: Братство Кольца',
                 'year': '2001',
                 'desc': 'В Средиземье скромный хоббит Фродо Бэггинс получает задание уничтожить всемогущее Кольцо Всевластья.',
-                'image': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-08/1566838383-1498774780-vlastelin-kolec-bratstvo-kolca.jpg',
                 'youtube_id': 'V75dMMIW2B4',
                 'kinogo_url': 'https://kinogo.my/films/1990-vlastelin-kolec-1.html'
             },
@@ -149,7 +149,7 @@ FILMS_DB = {
                 'title': 'Начало',
                 'year': '2010',
                 'desc': 'Кобб — талантливый вор, лучший в опасном искусстве извлечения: он крадет ценные секреты из глубин подсознания во время сна.',
-                'image': 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-07/1563273449-346513511-nachalo.jpg',
                 'youtube_id': 'CPTIgILtna8',
                 'kinogo_url': 'https://kinogo.my/films/2099-nachalo-2010.html'
             }
@@ -163,7 +163,7 @@ FILMS_DB = {
                 'title': 'Заклятие',
                 'year': '2013',
                 'desc': 'Детективы, расследующие паранормальные явления, сталкиваются с самым жутким делом в своей практике в доме уединенной фермы.',
-                'image': 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-08/1565431613-225345758-zaklyatie.jpg',
                 'youtube_id': 'k10ETZ41q5o',
                 'kinogo_url': 'https://kinogo.my/films/1520-zaklyatie-2013.html'
             },
@@ -172,7 +172,7 @@ FILMS_DB = {
                 'title': 'Оно',
                 'year': '2017',
                 'desc': 'Когда в городке Дерри начинают пропадать дети, группа подростков сталкивается со своими величайшими страхами в лице клоуна Пеннивайза.',
-                'image': 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-11/1572718104-585327891-ono.jpg',
                 'youtube_id': 'FnCdOQsX5kc',
                 'kinogo_url': 'https://kinogo.my/films/3820-ono-2017.html'
             },
@@ -181,7 +181,7 @@ FILMS_DB = {
                 'title': 'Сияние',
                 'year': '1980',
                 'desc': 'Джек Торренс приезжает в элегантный уединенный отель, чтобы поработать смотрителем во время мертвого сезона вместе с семьей.',
-                'image': 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2021-03/1614777598-1324747716-siyanie.jpg',
                 'youtube_id': 'S014oGZiSdI',
                 'kinogo_url': 'https://kinogo.my/films/5510-siyanie-1980.html'
             },
@@ -190,7 +190,7 @@ FILMS_DB = {
                 'title': 'Тихое место',
                 'year': '2018',
                 'desc': 'История одной семьи, которая вынуждена жить в полной темноте и тишине, чтобы не привлечь ужасных монстров, реагирующих на любой звук.',
-                'image': 'https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2020-01/1577903264-1065934522-tihoe-mesto.jpg',
                 'youtube_id': 'YPY7J-flzE8',
                 'kinogo_url': 'https://kinogo.my/films/4112-tihoe-mesto-2018.html'
             },
@@ -199,7 +199,7 @@ FILMS_DB = {
                 'title': 'Астрал',
                 'year': '2010',
                 'desc': 'Джош и Рене переезжают в новый дом, но не успевают распаковать вещи, как начинаются странные события: предметы двигаются, слышны звуки.',
-                'image': 'https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=500&auto=format&fit=crop',
+                'image': 'https://kinogo.my/uploads/posts/2019-12/1575459397-1582885938-astral.jpg',
                 'youtube_id': 'E1YbOMDI5mk',
                 'kinogo_url': 'https://kinogo.my/films/2810-astral-2010.html'
             }
@@ -753,7 +753,6 @@ genre_html_template = '''<!DOCTYPE html>
                     </div>
                     <p class="film-desc">{{ film.desc }}</p>
                     
-                    <!-- Переход на Киного в новой вкладке во избежание блокировки iframe -->
                     <a href="{{ film.kinogo_url }}" target="_blank" style="text-decoration: none; grid-column: span 2;">
                         <button class="play-movie-btn" style="width: 100%;">🎬 Смотреть фильм</button>
                     </a>
@@ -789,7 +788,6 @@ genre_html_template = '''<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ЕДИНЫЙ ПЛЕЕР ДЛЯ ТРЕЙЛЕРОВ -->
     <div class="modal" id="videoModal" onclick="closePlayer()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-modal" onclick="closePlayer()">&times;</span>
