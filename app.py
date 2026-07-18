@@ -8,14 +8,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- БАЗА ДАННЫХ С ПРЯМЫМИ ССЫЛКАМИ НА СТРАНИЦЫ KINOGO.MY ---
+# --- БАЗА ДАННЫХ С АЛЬТЕРНАТИВНЫМИ СТАБИЛЬНЫМИ ПЛЕЕРАМИ ---
 MOVIES = [
     {
         "id": 1,
         "title": "Аватар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
-        "video_url": "https://kinogo.my/2-avatar-2009.html", 
+        "video_url": "https://api.alloha.tv/?kp=251733", 
         "year": 2009,
         "director": "Джеймс Кэмерон",
         "rating": 7.9,
@@ -28,7 +28,7 @@ MOVIES = [
         "title": "Властелин колец: Братство Кольца",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
-        "video_url": "https://kinogo.my/260-vlastelin-kolec-bratstvo-kolca-2001.html", 
+        "video_url": "https://api.alloha.tv/?kp=348", 
         "year": 2001,
         "director": "Питер Джексон",
         "rating": 8.6,
@@ -41,7 +41,7 @@ MOVIES = [
         "title": "Гарри Поттер и Философский камень",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
-        "video_url": "https://kinogo.my/757-garri-potter-i-filosofskiy-kamen-2001.html", 
+        "video_url": "https://api.alloha.tv/?kp=689", 
         "year": 2001,
         "director": "Крис Коламбус",
         "rating": 8.2,
@@ -54,7 +54,7 @@ MOVIES = [
         "title": "Интерстеллар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
-        "video_url": "https://kinogo.my/2107-interstellar-2014-smotret-onlayn.html", 
+        "video_url": "https://api.alloha.tv/?kp=258687", 
         "year": 2014,
         "director": "Кристофер Нолан",
         "rating": 8.6,
@@ -67,7 +67,7 @@ MOVIES = [
         "title": "Матрица",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
-        "video_url": "https://kinogo.my/511-matrica-1999.html", 
+        "video_url": "https://api.alloha.tv/?kp=301", 
         "year": 1999,
         "director": "Лана Вачовски",
         "rating": 8.5,
@@ -80,7 +80,7 @@ MOVIES = [
         "title": "Начало",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
-        "video_url": "https://kinogo.my/790-nachalo-2010.html", 
+        "video_url": "https://api.alloha.tv/?kp=447301", 
         "year": 2010,
         "director": "Кристофер Нолан",
         "rating": 8.7,
@@ -93,7 +93,7 @@ MOVIES = [
         "title": "Темный рыцарь",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
-        "video_url": "https://kinogo.my/681-temnyy-rycar-2008.html", 
+        "video_url": "https://api.alloha.tv/?kp=111543", 
         "year": 2008,
         "director": "Кристофер Нолан",
         "rating": 8.5,
@@ -106,7 +106,7 @@ MOVIES = [
         "title": "Гладиатор",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
-        "video_url": "https://kinogo.my/481-gladiator-2000.html", 
+        "video_url": "https://api.alloha.tv/?kp=474", 
         "year": 2000,
         "director": "Ридли Скотт",
         "rating": 8.6,
@@ -119,7 +119,7 @@ MOVIES = [
         "title": "Мальчишник в Вегасе",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
-        "video_url": "https://kinogo.my/1376-malchishnik-v-vegase-2009.html", 
+        "video_url": "https://api.alloha.tv/?kp=408410", 
         "year": 2009,
         "director": "Тодд Филлипс",
         "rating": 7.9,
@@ -132,7 +132,7 @@ MOVIES = [
         "title": "Маска",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
-        "video_url": "https://kinogo.my/1802-maska-1994.html", 
+        "video_url": "https://api.alloha.tv/?kp=6039", 
         "year": 1994,
         "director": "Чак Рассел",
         "rating": 8.0,
@@ -145,7 +145,7 @@ MOVIES = [
         "title": "Главный герой",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
-        "video_url": "https://kinogo.my/25520-glavnyy-geroy-2021.html", 
+        "video_url": "https://api.alloha.tv/?kp=1199159", 
         "year": 2021,
         "director": "Шон Леви",
         "rating": 7.2,
@@ -158,7 +158,7 @@ MOVIES = [
         "title": "Заклятие",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
-        "video_url": "https://kinogo.my/1020-zaklyatie-2013.html", 
+        "video_url": "https://api.alloha.tv/?kp=462682", 
         "year": 2013,
         "director": "Джеймс Ван",
         "rating": 7.4,
@@ -171,7 +171,7 @@ MOVIES = [
         "title": "Оно",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
-        "video_url": "https://kinogo.my/6871-ono-2017.html", 
+        "video_url": "https://api.alloha.tv/?kp=452973", 
         "year": 2017,
         "director": "Энди Мускетти",
         "rating": 7.3,
@@ -184,7 +184,7 @@ MOVIES = [
         "title": "Сияние",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
-        "video_url": "https://kinogo.my/3511-siyanie-1980.html", 
+        "video_url": "https://api.alloha.tv/?kp=409", 
         "year": 1980,
         "director": "Стэнли Кубрик",
         "rating": 8.4,
@@ -197,7 +197,7 @@ MOVIES = [
         "title": "Тихое место",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
-        "video_url": "https://kinogo.my/7521-tihoe-mesto-2018.html", 
+        "video_url": "https://api.alloha.tv/?kp=1043743", 
         "year": 2018,
         "director": "Джон Красински",
         "rating": 7.1,
@@ -210,7 +210,7 @@ MOVIES = [
         "title": "Астрал",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
-        "video_url": "https://kinogo.my/1511-astral-2010.html", 
+        "video_url": "https://api.alloha.tv/?kp=495892", 
         "year": 2010,
         "director": "Джеймс Ван",
         "rating": 6.8,
@@ -336,15 +336,32 @@ MOVIE_HTML = """
         .watch-btn {
             display: inline-block; background-color: var(--accent-green); color: white;
             padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
-            text-decoration: none; margin-bottom: 25px; transition: background 0.2s;
+            cursor: pointer; border: none; margin-bottom: 25px; transition: background 0.2s;
             text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(45,183,66,0.3);
-            text-align: center;
         }
         .watch-btn:hover { background-color: var(--accent-green-hover); }
 
         .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .meta-table td { padding: 10px 0; border-bottom: 1px solid #28283a; }
         .meta-table td.label { color: var(--text-muted); width: 140px; }
+        
+        /* МОДАЛЬНОЕ ОКНО */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            background-color: #000000; width: 90%; max-width: 960px; height: 560px;
+            border-radius: 16px; overflow: hidden; position: relative; border: 2px solid var(--primary);
+            display: flex; flex-direction: column;
+        }
+        .modal-header { background-color: #161623; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
+        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; }
+        .close-btn:hover { color: var(--primary); }
+        .modal-body { flex-grow: 1; width: 100%; height: 100%; background-color: #000; }
+        .modal-body iframe { width: 100%; height: 100%; border: none; }
 
         .reviews-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }
         .review-item { background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
@@ -363,8 +380,7 @@ MOVIE_HTML = """
             <div class="poster-box"><img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}"></div>
             <div class="info-box">
                 <h2>{{ movie.title }} ({{ movie.year }})</h2>
-                <!-- Открываем оригинальную ссылку в новой вкладке без блокировок -->
-                <a href="{{ movie.video_url }}" target="_blank" class="watch-btn">Смотреть на Kinogo</a>
+                <button class="watch-btn" onclick="openPlayer()">Смотреть фильм</button>
                 <table class="meta-table">
                     <tr><td class="label">Жанр</td><td>{{ movie.genre }}</td></tr>
                     <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{ movie.rating }}</td></tr>
@@ -387,6 +403,36 @@ MOVIE_HTML = """
             </form>
         </div>
     </div>
+
+    <div class="modal-overlay" id="playerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Онлайн плеер: {{ movie.title }}</h3>
+                <button class="close-btn" onclick="closePlayer()">&times;</button>
+            </div>
+            <div class="modal-body"><div id="iframeContainer" style="width:100%; height:100%;"></div></div>
+        </div>
+    </div>
+
+    <script>
+        function openPlayer() {
+            var modal = document.getElementById('playerModal');
+            var container = document.getElementById('iframeContainer');
+            // Встраиваем стабильный плеер без блокировок
+            container.innerHTML = '<iframe src="{{ movie.video_url }}" allowfullscreen scrolling="no"></iframe>';
+            modal.style.display = 'flex';
+        }
+        function closePlayer() {
+            var modal = document.getElementById('playerModal');
+            var container = document.getElementById('iframeContainer');
+            container.innerHTML = '';
+            modal.style.display = 'none';
+        }
+        window.onclick = function(event) {
+            var modal = document.getElementById('playerModal');
+            if (event.target == modal) { closePlayer(); }
+        }
+    </script>
 </body>
 </html>
 """
