@@ -1,5 +1,6 @@
 import os
-import requests
+import urllib.request
+import urllib.error
 from flask import Flask, render_template_string, request, redirect, url_for, Response, session, flash
 
 app = Flask(__name__)
@@ -145,7 +146,7 @@ MOVIES = [
         "rating": 7.2,
         "duration": "115 мин.",
         "description": "У сотрудника крупного банка по имени Парень вся жизнь отточена до мелочей: кофе по утрам, веселая болтовня, ограбление банка бандитами по расписанию. Но однажды Парень узнает, что его уютный город Свободный Город — это жестокая компьютерная онлайн-игра, а сам он — всего лишь второстепенный неигровой персонаж (NPC). Парень решает изменить свой программный код, привлечь внимание прекрасной девушки-игрока и стать настоящим героем, чтобы спасти свой цифровой мир от закрытия.",
-        "cast": "Райан Рейнольдс, Джоди Комер, Лил Рел Ховери, Тайка Вайтити"
+        "cast": "Райан Рейнольдс, Джоди Комер, Лил Rel Ховери, Тайка Вайтити"
     },
 
     # === УЖАСЫ ===
@@ -740,7 +741,7 @@ MOVIE_HTML = """
 </html>
 """
 
-# --- ПРОКСИ-ОБРАБОТЧИК ДЛЯ СТАБИЛЬНОЙ ЗАГРУЗКИ КАРТИНОК C KINOGO.MY ---
+# --- ОБНОВЛЕННЫЙ ПРОКСИ-ОБРАБОТЧИК (РАБОТАЕТ НА ВСТРОЕННЫХ БИБЛИОТЕКАХ) ---
 @app.route('/proxy-image')
 def proxy_image():
     image_url = request.args.get('url')
@@ -748,13 +749,20 @@ def proxy_image():
         return "Missing url parameter", 400
         
     try:
-        # Имитируем запрос от браузера с правильным заголовком Referer
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Referer': 'https://kinogo.my/'
-        }
-        response = requests.get(image_url, headers=headers, timeout=12)
-        return Response(response.content, content_type=response.headers.get('Content-Type', 'image/jpeg'))
+        # Формируем запрос со стандартными заголовками браузера
+        req = urllib.request.Request(
+            image_url, 
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://kinogo.my/'
+            }
+        )
+        # Скачиваем картинку стандартными средствами Python
+        with urllib.request.urlopen(req, timeout=12) as response:
+            content = response.read()
+            content_type = response.headers.get('Content-Type', 'image/jpeg')
+            return Response(content, content_type=content_type)
+            
     except Exception as e:
         return f"Error loading image through proxy: {str(e)}", 500
 
@@ -763,18 +771,15 @@ def proxy_image():
 
 @app.route('/')
 def index():
-    # Главная страница, отрисовывающая базу данных
     return render_template_string(INDEX_HTML, movies=MOVIES)
 
 
 @app.route('/movie/<int:movie_id>', methods=['GET', 'POST'])
 def movie_detail(movie_id):
-    # Поиск фильма в списке
     movie = next((m for m in MOVIES if m["id"] == movie_id), None)
     if not movie:
         return "Извините, данный фильм не найден в базе данных сайта.", 404
 
-    # Обработка добавления отзыва на фильм
     if request.method == 'POST':
         reviewer_name = request.form.get('name', 'Анонимный зритель').strip()
         review_text = request.form.get('review_text', '').strip()
@@ -789,11 +794,9 @@ def movie_detail(movie_id):
             })
         return redirect(url_for('movie_detail', movie_id=movie_id))
 
-    # Сбор и рендеринг отзывов
     movie_reviews = REVIEWS.get(movie_id, [])
     return render_template_string(MOVIE_HTML, movie=movie, reviews=movie_reviews)
 
 
 if __name__ == '__main__':
-    # Стандартный локальный порт для разработки в PyCharm
     app.run(debug=True, host='0.0.0.0', port=5000)
