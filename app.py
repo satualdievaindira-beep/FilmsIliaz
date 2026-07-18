@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- ПОЛНАЯ БАЗА ДАННЫХ ИЗ 16 ФИЛЬМОВ С ПРЯМЫМИ ССЫЛКАМИ НА КИНОПОИСК ---
+# --- ПОЛНАЯ БАЗА ДАННЫХ ИЗ 16 ФИЛЬМОВ С ССЫЛКАМИ НА КИНОПОИСК ---
 MOVIES = [
     {
         "id": 1,
@@ -222,7 +222,52 @@ MOVIES = [
 
 REVIEWS = {movie["id"]: [] for movie in MOVIES}
 
-INDEX_HTML = """
+# --- ОБЩИЕ СТИЛИ ДЛЯ ИНФОРМАЦИОННЫХ МОДАЛЬНЫХ ОКНО ---
+MODAL_STYLES = """
+    .footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 25px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; cursor: pointer; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--primary); }
+    
+    /* Стили окон */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.85); display: flex; align-items: center;
+        justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-box {
+        background-color: var(--card-bg); width: 90%; max-width: 550px;
+        padding: 35px; border-radius: 16px; border: 1px solid #333344;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;
+        transform: translateY(-20px); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-box { transform: translateY(0); }
+    .modal-close {
+        position: absolute; top: 15px; right: 20px; background: none; border: none;
+        color: var(--text-muted); font-size: 2rem; cursor: pointer; transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--primary); }
+    .modal-box h3 { margin-top: 0; color: var(--primary); font-size: 1.6rem; border-bottom: 1px solid #28283a; padding-bottom: 10px; }
+    .modal-box p { line-height: 1.6; color: #d1d1d6; font-size: 0.95rem; }
+    .admin-contact-item { background: #13131c; padding: 12px 18px; border-radius: 8px; margin-top: 10px; border-left: 3px solid var(--primary); font-weight: 600; }
+"""
+
+# --- ОБЩИЙ СКРИПТ ДЛЯ УПРАВЛЕНИЯ ОКНАМИ ---
+MODAL_SCRIPT = """
+<script>
+    function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = 'auto'; }
+    // Закрытие при клике на темную область вокруг окна
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+</script>
+"""
+
+INDEX_HTML = f"""
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -230,34 +275,35 @@ INDEX_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Films_Iliaz — Лучшая База Фильмов</title>
     <style>
-        :root {
+        :root {{
             --bg-dark: #0f0f12;
             --card-bg: #1a1a24;
             --primary: #ff4a5a;
             --text-main: #ffffff;
             --text-muted: #a0a0b0;
-        }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
-        header { background: linear-gradient(135deg, #161623 0%, #0b0b11 100%); padding: 30px 20px; text-align: center; border-bottom: 4px solid var(--primary); }
-        header h1 { margin: 0; font-size: 3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; }
-        header p { margin: 10px 0 0 0; color: var(--text-muted); }
-        .container { max-width: 1300px; margin: 40px auto; padding: 0 25px; }
-        .genre-section { margin-bottom: 60px; }
-        .genre-header { border-bottom: 2px solid #252535; padding-bottom: 10px; margin-bottom: 30px; }
-        .genre-title { font-size: 2rem; margin: 0; }
-        .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 35px; }
-        .movie-card {
+        }}
+        body {{ font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }}
+        header {{ background: linear-gradient(135deg, #161623 0%, #0b0b11 100%); padding: 30px 20px; text-align: center; border-bottom: 4px solid var(--primary); }}
+        header h1 {{ margin: 0; font-size: 3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; }}
+        header p {{ margin: 10px 0 0 0; color: var(--text-muted); }}
+        .container {{ max-width: 1300px; margin: 40px auto; padding: 0 25px; }}
+        .genre-section {{ margin-bottom: 60px; }}
+        .genre-header {{ border-bottom: 2px solid #252535; padding-bottom: 10px; margin-bottom: 30px; }}
+        .genre-title {{ font-size: 2rem; margin: 0; }}
+        .movies-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 35px; }}
+        .movie-card {{
             background-color: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.4);
             text-decoration: none; color: inherit; display: flex; flex-direction: column; border: 1px solid #222232; transition: transform 0.3s;
-        }
-        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .poster-wrapper { width: 100%; height: 350px; position: relative; }
-        .poster-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .rating-badge { position: absolute; top: 15px; right: 15px; background-color: rgba(0, 0, 0, 0.85); color: #ffc107; padding: 5px 10px; border-radius: 6px; font-weight: bold; }
-        .movie-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .movie-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0; }
-        .movie-meta { font-size: 0.9rem; color: var(--text-muted); }
-        footer { text-align: center; padding: 40px 20px; color: var(--text-muted); background-color: #0b0b0e; }
+        }}
+        .movie-card:hover {{ transform: translateY(-5px); border-color: var(--primary); }}
+        .poster-wrapper {{ width: 100%; height: 350px; position: relative; }}
+        .poster-wrapper img {{ width: 100%; height: 100%; object-fit: cover; }}
+        .rating-badge {{ position: absolute; top: 15px; right: 15px; background-color: rgba(0, 0, 0, 0.85); color: #ffc107; padding: 5px 10px; border-radius: 6px; font-weight: bold; }}
+        .movie-content {{ padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }}
+        .movie-title {{ font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0; }}
+        .movie-meta {{ font-size: 0.9rem; color: var(--text-muted); }}
+        footer {{ text-align: center; padding: 40px 20px; color: var(--text-muted); background-color: #0b0b0e; border-top: 1px solid #1c1c28; }}
+        {MODAL_STYLES}
     </style>
 </head>
 <body>
@@ -266,116 +312,193 @@ INDEX_HTML = """
         <p>Индивидуальная онлайн-галерея твоих любимых фильмов</p>
     </header>
     <div class="container">
-        {% for genre in ["Фантастика", "Боевики", "Комедии", "Ужасы"] %}
+        <!-- ФАНТАСТИКА, БОЕВИКИ, КОМЕДИИ, УЖАСЫ -->
+        {{% for genre in ["Фантастика", "Боевики", "Комедии", "Ужасы"] %}}
         <div class="genre-section">
-            <div class="genre-header"><h2 class="genre-title">{{ genre }}</h2></div>
+            <div class="genre-header"><h2 class="genre-title">{{{{ genre }}}}</h2></div>
             <div class="movies-grid">
-                {% for movie in movies if movie.genre == genre %}
-                <a href="{{ url_for('movie_detail', movie_id=movie.id) }}" class="movie-card">
+                {{% for movie in movies if movie.genre == genre %}}
+                <a href="{{{{ url_for('movie_detail', movie_id=movie.id) }}}}" class="movie-card">
                     <div class="poster-wrapper">
-                        <img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}">
-                        <div class="rating-badge">★ {{ movie.rating }}</div>
+                        <img src="{{{{ url_for('proxy_image', url=movie.poster) }}}}" alt="{{{{ movie.title }}}}">
+                        <div class="rating-badge">★ {{{{ movie.rating }}}}</div>
                     </div>
                     <div class="movie-content">
                         <div>
-                            <div class="movie-title">{{ movie.title }}</div>
-                            <div class="movie-meta">{{ movie.year }} • {{ movie.duration }}</div>
+                            <div class="movie-title">{{{{ movie.title }}}}</div>
+                            <div class="movie-meta">{{{{ movie.year }}}} • {{{{ movie.duration }}}}</div>
                         </div>
                     </div>
                 </a>
-                {% endfor %}
+                {{% endfor %}}
             </div>
         </div>
-        {% endfor %}
+        {{% endfor %}}
     </div>
-    <footer>&copy; 2026 Films_Iliaz. Все права защищены.</footer>
+    
+    <footer>
+        <div>&copy; 2026 Films_Iliaz. Все права защищены.</div>
+        <div class="footer-links">
+            <a onclick="openModal('aboutModal')">О сайте</a>
+            <a onclick="openModal('adminModal')">Связаться с админом</a>
+            <a onclick="openModal('cookieModal')">Файлы cookie</a>
+        </div>
+    </footer>
+
+    <!-- Окна инфо-панелей -->
+    <div id="aboutModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+            <h3>О проекте Films_Iliaz</h3>
+            <p><strong>Films_Iliaz</strong> — это современный, стильный и быстрый веб-кинотеатр, созданный на мощном фреймворке Python Flask. Наша цель — предоставить удобный каталог и мгновенный доступ к шедеврам мирового кинематографа в один клик без сложных регистраций.</p>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
+            <h3>Связаться с администрацией</h3>
+            <p>Возникли вопросы, предложения по рекламе или хотите добавить свой любимый фильм на сайт? Напишите напрямую главному создателю проекта:</p>
+            <div class="admin-contact-item">Email: admin@films-iliaz.ru</div>
+            <div class="admin-contact-item">Telegram: @iliaz_media</div>
+        </div>
+    </div>
+
+    <div id="cookieModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('cookieModal')">&times;</button>
+            <h3>Политика использования файлов Cookie</h3>
+            <p>Мы используем файлы cookie (куки), чтобы сделать твою работу с сайтом максимально комфортной. Они помогают сохранять добавленные отзывы, запоминать выбранные настройки дизайна и ускорять загрузку изображений. Оставаясь на сайте, ты соглашаешься с условиями хранения куки.</p>
+        </div>
+    </div>
+
+    {MODAL_SCRIPT}
 </body>
 </html>
 """
 
-MOVIE_HTML = """
+MOVIE_HTML = f"""
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ movie.title }} — Films_Iliaz</title>
+    <title>紧张 movie.title 紧张 — Films_Iliaz</title>
     <style>
-        :root {
+        :root {{
             --bg-dark: #0f0f12;
             --card-bg: #1a1a24;
             --primary: #ff4a5a;
             --accent-green: #00c853;
-            --accent-green-hover: #00eedb;
             --text-main: #ffffff;
             --text-muted: #a0a0b0;
-        }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
-        header { background-color: #161623; padding: 20px 40px; border-bottom: 3px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; font-size: 2rem; color: var(--primary); }
-        .back-btn { color: white; text-decoration: none; font-weight: 600; background-color: #2b2b3d; padding: 10px 20px; border-radius: 8px; }
-        .container { max-width: 1100px; margin: 50px auto; padding: 0 25px; }
-        .movie-main-box { display: flex; gap: 50px; background-color: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid #222232; }
-        .poster-box { width: 320px; height: 470px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
-        .poster-box img { width: 100%; height: 100%; object-fit: cover; }
-        .info-box { flex-grow: 1; }
-        .info-box h2 { margin: 0 0 15px 0; font-size: 2.8rem; }
+        }}
+        body {{ font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }}
+        header {{ background-color: #161623; padding: 20px 40px; border-bottom: 3px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }}
+        header h1 {{ margin: 0; font-size: 2rem; color: var(--primary); }}
+        .back-btn {{ color: white; text-decoration: none; font-weight: 600; background-color: #2b2b3d; padding: 10px 20px; border-radius: 8px; }}
+        .container {{ max-width: 1100px; margin: 50px auto; padding: 0 25px; }}
+        .movie-main-box {{ display: flex; gap: 50px; background-color: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid #222232; }}
+        .poster-box {{ width: 320px; height: 470px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }}
+        .poster-box img {{ width: 100%; height: 100%; object-fit: cover; }}
+        .info-box {{ flex-grow: 1; }}
+        .info-box h2 {{ margin: 0 0 15px 0; font-size: 2.8rem; }}
         
-        .watch-link {
+        .watch-link {{
             display: inline-block; background-color: var(--accent-green); color: black;
             padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
             text-decoration: none; margin-bottom: 25px; transition: all 0.2s;
             text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,200,83,0.3);
             text-align: center;
-        }
-        .watch-link:hover { background-color: #00eedb; box-shadow: 0 4px 20px rgba(0,238,219,0.4); }
+        }}
+        .watch-link:hover {{ background-color: #00eedb; box-shadow: 0 4px 20px rgba(0,238,219,0.4); }}
 
-        .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .meta-table td { padding: 10px 0; border-bottom: 1px solid #28283a; }
-        .meta-table td.label { color: var(--text-muted); width: 140px; }
+        .meta-table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; }}
+        .meta-table td {{ padding: 10px 0; border-bottom: 1px solid #28283a; }}
+        .meta-table td.label {{ color: var(--text-muted); width: 140px; }}
         
-        .reviews-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }
-        .review-item { background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
-        .review-user { font-weight: bold; color: var(--primary); }
-        .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3a3a52; background-color: #121218; color: white; margin-bottom: 15px; box-sizing: border-box;}
-        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer;}
+        .reviews-wrapper {{ background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }}
+        .review-item {{ background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }}
+        .review-user {{ font-weight: bold; color: var(--primary); }}
+        .input-field {{ width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3a3a52; background-color: #121218; color: white; margin-bottom: 15px; box-sizing: border-box;}}
+        .btn-submit {{ background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer;}}
+        
+        footer {{ text-align: center; padding: 40px 20px; color: var(--text-muted); background-color: #0b0b0e; border-top: 1px solid #1c1c28; margin-top: 50px;}}
+        {MODAL_STYLES}
     </style>
 </head>
 <body>
     <header>
         <h1>Films_Iliaz</h1>
-        <a href="{{ url_for('index') }}" class="back-btn">← На главную</a>
+        <a href="{{{{ url_for('index') }}}}" class="back-btn">← На главную</a>
     </header>
     <div class="container">
         <div class="movie-main-box">
-            <div class="poster-box"><img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}"></div>
+            <div class="poster-box"><img src="{{{{ url_for('proxy_image', url=movie.poster) }}}}" alt="{{{{ movie.title }}}}"></div>
             <div class="info-box">
-                <h2>{{ movie.title }} ({{ movie.year }})</h2>
-                <!-- ПРЯМАЯ ССЫЛКА НА КИНОПОИСК -->
-                <a href="{{ movie.video_url }}" target="_blank" class="watch-link">Смотреть на Кинопоиске</a>
+                <h2>{{{{ movie.title }}}} ({{{{ movie.year }}}})</h2>
+                <a href="{{{{ movie.video_url }}}}" target="_blank" class="watch-link">Смотреть на Кинопоиске</a>
                 <table class="meta-table">
-                    <tr><td class="label">Жанр</td><td>{{ movie.genre }}</td></tr>
-                    <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{ movie.rating }}</td></tr>
-                    <tr><td class="label">Режиссер</td><td>{{ movie.director }}</td></tr>
-                    <tr><td class="label">Длительность</td><td>{{ movie.duration }}</td></tr>
-                    <tr><td class="label">В ролях</td><td>{{ movie.cast }}</td></tr>
+                    <tr><td class="label">Жанр</td><td>{{{{ movie.genre }}}}</td></tr>
+                    <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{{{ movie.rating }}}}</td></tr>
+                    <tr><td class="label">Режиссер</td><td>{{{{ movie.director }}}}</td></tr>
+                    <tr><td class="label">Длительность</td><td>{{{{ movie.duration }}}}</td></tr>
+                    <tr><td class="label">В ролях</td><td>{{{{ movie.cast }}}}</td></tr>
                 </table>
-                <p style="line-height: 1.6; color: #d1d1d6;">{{ movie.description }}</p>
+                <p style="line-height: 1.6; color: #d1d1d6;">{{{{ movie.description }}}}</p>
             </div>
         </div>
         
         <div class="reviews-wrapper">
             <h3>Отзывы</h3>
-            {% for r in reviews %}
-                <div class="review-item"><div class="review-user">{{ r.name }}</div><div>{{ r.text }}</div></div>
-            {% endfor %}
-            <form action="{{ url_for('movie_detail', movie_id=movie.id) }}" method="POST" style="margin-top:25px;">
+            {{% for r in reviews %}}
+                <div class="review-item"><div class="review-user">{{{{ r.name }}}}</div><div>{{{{ r.text }}}}</div></div>
+            {{% endfor %}}
+            <form action="{{{{ url_for('movie_detail', movie_id=movie.id) }}}}" method="POST" style="margin-top:25px;">
                 <input type="text" name="name" class="input-field" placeholder="Ваше имя" required>
                 <textarea name="review_text" class="input-field" placeholder="Ваш отзыв" style="min-height:100px;" required></textarea>
                 <button type="submit" class="btn-submit">Отправить</button>
             </form>
         </div>
     </div>
+
+    <footer>
+        <div>&copy; 2026 Films_Iliaz. Все права защищены.</div>
+        <div class="footer-links">
+            <a onclick="openModal('aboutModal')">О сайте</a>
+            <a onclick="openModal('adminModal')">Связаться с админом</a>
+            <a onclick="openModal('cookieModal')">Файлы cookie</a>
+        </div>
+    </footer>
+
+    <!-- Окна инфо-панелей -->
+    <div id="aboutModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+            <h3>О проекте Films_Iliaz</h3>
+            <p><strong>Films_Iliaz</strong> — это современный, стильный и быстрый веб-кинотеатр, созданный на мощном фреймворке Python Flask. Наша цель — предоставить удобный каталог и мгновенный доступ к шедеврам мирового кинематографа в один клик без сложных регистраций.</p>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
+            <h3>Связаться с администрацией</h3>
+            <p>Возникли вопросы, предложения по рекламе или хотите добавить свой любимый фильм на сайт? Напишите напрямую главному создателю проекта:</p>
+            <div class="admin-contact-item">Email: admin@films-iliaz.ru</div>
+            <div class="admin-contact-item">Telegram: @iliaz_media</div>
+        </div>
+    </div>
+
+    <div id="cookieModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('cookieModal')">&times;</button>
+            <h3>Политика использования файлов Cookie</h3>
+            <p>Мы используем файлы cookie (куки), чтобы сделать твою работу с сайтом максимально комфортной. Они помогают сохранять добавленные отзывы, запоминать выбранные настройки дизайна и ускорять загрузку изображений. Оставаясь на сайте, ты соглашаешься с условиями хранения куки.</p>
+        </div>
+    </div>
+
+    {MODAL_SCRIPT}
 </body>
 </html>
 """
