@@ -1,1352 +1,533 @@
 import os
-
-from flask import Flask, render_template
+import urllib.request
+import urllib.error
+from flask import Flask, render_template_string, request, redirect, url_for, Response
 
 app = Flask(__name__)
 
-# --- БАЗА ДАННЫХ ФИЛЬМОВ (ОБНОВЛЕННАЯ С EMBED-КОДАМИ ДЛЯ ПЛЕЕРА) ---
-FILMS_DB = {
-    'action': {
-        'title': 'Боевики & Экшен',
-        'list': [
-            {
-                'id': 'mad_max',
-                'title': 'Безумный Макс: Дорога ярости',
-                'year': '2015',
-                'desc': 'В постапокалиптическом мире Макс объединяется с воительницей Фуриосой, чтобы сбежать от тирана Несмертного Джо.',
-                'image': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop',
-                'trailer_id': 'hEJnMQG96dQ'
-            },
-            {
-                'id': 'john_wick',
-                'title': 'Джон Уик',
-                'year': '2014',
-                'desc': 'История бывшего наемного убийцы, который возвращается в криминальный мир, чтобы жестоко отомстить за самое дорогое.',
-                'image': 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=500&auto=format&fit=crop',
-                'trailer_id': '2AUmvWm5epQ'
-            }
-        ]
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
+app.config['DEBUG'] = True
+
+# --- ПОЛНАЯ БАЗА ДАННЫХ ИЗ 16 ФИЛЬМОВ С ССЫЛКАМИ НА КИНОПОИСК ---
+MOVIES = [
+    {
+        "id": 1,
+        "title": "Аватар",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/251733/", 
+        "year": 2009,
+        "director": "Джеймс Кэмерон",
+        "rating": 7.9,
+        "duration": "162 мин.",
+        "description": "Бывший морской пехотинец Джейк Салли, прикованный к инвалидному креслу, отправляется на Пандору...",
+        "cast": "Сэм Уортингтон, Зои Салдана"
     },
-    'comedy': {
-        'title': 'Комедии',
-        'list': [
-            {
-                'id': 'home_alone',
-                'title': 'Один дома',
-                'year': '1990',
-                'desc': 'Маленький Кевин случайно остается один дома на Рождество и защищает свое жилище от двоих неуклюжих грабителей.',
-                'image': 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=500&auto=format&fit=crop',
-                'trailer_id': 'jEDaVIXyiGg'
-            }
-        ]
+    {
+        "id": 2,
+        "title": "Властелин колец: Братство Кольца",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/348/", 
+        "year": 2001,
+        "director": "Питер Джексон",
+        "rating": 8.6,
+        "duration": "178 мин.",
+        "description": "В спокойной деревушке Хоббитон молодой хоббит Фродо Бэггинс получает Кольцо Всевластья...",
+        "cast": "Элайджа Вуд, Иэн Маккеллен"
     },
-    'fantasy': {
-        'title': 'Фэнтези',
-        'list': [
-            {
-                'id': 'harry_potter',
-                'title': 'Гарри Поттер и Философский камень',
-                'year': '2001',
-                'desc': 'Мальчик-сирота узнает, что он волшебник, и отправляется учиться в знаменитую школу магии Хогвартс.',
-                'image': 'https://images.unsplash.com/photo-1598153346810-860daa814c4b?q=80&w=500&auto=format&fit=crop',
-                'trailer_id': 'VyHV0BRfm1s'
-            }
-        ]
+    {
+        "id": 3,
+        "title": "Гарри Поттер и Философский камень",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/689/", 
+        "year": 2001,
+        "director": "Крис Коламбус",
+        "rating": 8.2,
+        "duration": "152 мин.",
+        "description": "Гарри Поттер — обычный сирота, узнающий в 11 лет, что он волшебник...",
+        "cast": "Дэниэл Рэдклифф, Эмма Уотсон"
+    },
+    {
+        "id": 4,
+        "title": "Интерстеллар",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/258687/", 
+        "year": 2014,
+        "director": "Кристофер Нолан",
+        "rating": 8.6,
+        "duration": "169 мин.",
+        "description": "Группа исследователей использует пространственно-временной тоннель для спасения человечества...",
+        "cast": "Мэттью Макконахи, Энн Хэтэуэй"
+    },
+    {
+        "id": 5,
+        "title": "Матрица",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/301/", 
+        "year": 1999,
+        "director": "Лана Вачовски",
+        "rating": 8.5,
+        "duration": "136 мин.",
+        "description": "Жизнь Томаса Андерсона разделена на две части: днем он программист, ночью — хакер Нео...",
+        "cast": "Киану Ривз, Лоренс Фишбёрн"
+    },
+    {
+        "id": 6,
+        "title": "Начало",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/447301/", 
+        "year": 2010,
+        "director": "Кристофер Нолан",
+        "rating": 8.7,
+        "duration": "148 мин.",
+        "description": "Кобб — мастер кражи секретов из глубин подсознания во время сна...",
+        "cast": "Леонардо Ди Каприо, Том Харди"
+    },
+    {
+        "id": 7,
+        "title": "Темный рыцарь",
+        "genre": "Боевики",
+        "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/111543/", 
+        "year": 2008,
+        "director": "Кристофер Нолан",
+        "rating": 8.5,
+        "duration": "152 мин.",
+        "description": "Бэтмен поднимает ставки в войне с криминалом, сталкиваясь с безумным Джокером...",
+        "cast": "Кристиан Бейл, Хит Леджер"
+    },
+    {
+        "id": 8,
+        "title": "Гладиатор",
+        "genre": "Боевики",
+        "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/474/", 
+        "year": 2000,
+        "director": "Ридли Скотт",
+        "rating": 8.6,
+        "duration": "155 мин.",
+        "description": "Преданный генерал Максимус становится гладиатором, чтобы отомстить убийце своей семьи...",
+        "cast": "Рассел Кроу, Хоакин Феникс"
+    },
+    {
+        "id": 9,
+        "title": "Мальчишник в Вегасе",
+        "genre": "Комедии",
+        "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/408410/", 
+        "year": 2009,
+        "director": "Тодд Филлипс",
+        "rating": 7.9,
+        "duration": "100 мин.",
+        "description": "Трое друзей просыпаются после мальчишника в Вегасе и понимают, что жених исчез...",
+        "cast": "Брэдли Купер, Зак Галифианакис"
+    },
+    {
+        "id": 10,
+        "title": "Маска",
+        "genre": "Комедии",
+        "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/6039/", 
+        "year": 1994,
+        "director": "Чак Рассел",
+        "rating": 8.0,
+        "duration": "101 мин.",
+        "description": "Скромный работник банка находит маску, превращающую его в неуязвимого весельчака...",
+        "cast": "Джим Керри, Кэмерон Диас"
+    },
+    {
+        "id": 11,
+        "title": "Главный герой",
+        "genre": "Комедии",
+        "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/1199159/", 
+        "year": 2021,
+        "director": "Шон Леви",
+        "rating": 7.2,
+        "duration": "115 мин.",
+        "description": "Банковский клерк узнает, что он — второстепенный персонаж в жестокой видеоигре...",
+        "cast": "Райан Рейнольдс, Джоди Комер"
+    },
+    {
+        "id": 12,
+        "title": "Заклятие",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/462682/", 
+        "year": 2013,
+        "director": "Джеймс Ван",
+        "rating": 7.4,
+        "duration": "112 мин.",
+        "description": "Исследователи паранормального помогают семье, столкнувшейся с темным духом на ферме...",
+        "cast": "Вера Фармига, Патрик Уилсон"
+    },
+    {
+        "id": 13,
+        "title": "Оно",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/452973/", 
+        "year": 2017,
+        "director": "Энди Мускетти",
+        "rating": 7.3,
+        "duration": "135 мин.",
+        "description": "Школьники объединяются, чтобы победить жуткого клоуна Пеннивайза...",
+        "cast": "Билл Скарсгард, Финн Вулфхард"
+    },
+    {
+        "id": 14,
+        "title": "Сияние",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/409/", 
+        "year": 1980,
+        "director": "Стэнли Кубрик",
+        "rating": 8.4,
+        "duration": "144 мин.",
+        "description": "Писатель Джек Торренс теряет рассудок в пустом зимнем отеле Оверлук...",
+        "cast": "Джек Николсон, Шелли Дювалл"
+    },
+    {
+        "id": 15,
+        "title": "Тихое место",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/1043743/", 
+        "year": 2018,
+        "director": "Джон Красински",
+        "rating": 7.1,
+        "duration": "90 мин.",
+        "description": "Семья выживает в мире слепых монстров, реагирующих на малейший звук...",
+        "cast": "Эмили Блант, Джон Красински"
+    },
+    {
+        "id": 16,
+        "title": "Астрал",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
+        "video_url": "https://www.kinopoisk.ru/film/495892/", 
+        "year": 2010,
+        "director": "Джеймс Ван",
+        "rating": 6.8,
+        "duration": "103 мин.",
+        "description": "Мальчик впадает в кому, а его душа оказывается заперта в пугающем Астрале...",
+        "cast": "Патрик Уилсон, Роуз Бирн"
     }
-}
+]
 
-# --- АВТОМАТИЧЕСКАЯ НАСТРОЙКА СТРУКТУРЫ ПРОЕКТА ---
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
-STATIC_DIR = os.path.join(BASE_DIR, 'static')
+REVIEWS = {movie["id"]: [] for movie in MOVIES}
 
-if not os.path.exists(TEMPLATES_DIR): os.makedirs(TEMPLATES_DIR)
-if not os.path.exists(STATIC_DIR): os.makedirs(STATIC_DIR)
-
-# Продвинутые стили CSS с плавной анимацией и размытием (записываем отдельно, без f-строк)
-SHARED_CSS = """
-body { 
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-    background-color: #08080a; 
-    color: #ffffff; 
-    margin: 0; 
-    padding: 0; 
-    overflow-x: hidden;
-}
-nav { 
-    background-color: rgba(4, 4, 6, 0.85); 
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 20px 0; 
-    box-shadow: 0 4px 30px rgba(0,0,0,0.8); 
-    position: sticky; 
-    top: 0; 
-    z-index: 1000; 
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-nav a { 
-    color: #9ca3af; 
-    text-decoration: none; 
-    font-weight: 600; 
-    margin: 0 18px; 
-    font-size: 1.05rem; 
-    transition: all 0.3s ease; 
-}
-nav a:hover { 
-    color: #ff2e3b; 
-    text-shadow: 0 0 15px rgba(255, 46, 59, 0.5);
-}
-.logo { 
-    color: #ff2e3b !important; 
-    font-size: 1.6rem; 
-    text-transform: uppercase; 
-    letter-spacing: 3px; 
-    font-weight: 900;
-}
-.container { 
-    padding: 40px 20px; 
-    max-width: 1200px; 
-    margin: 0 auto; 
-}
-.accent { 
-    color: #ff2e3b; 
-    text-shadow: 0 0 15px rgba(255, 46, 59, 0.3);
-}
-h1 { 
-    font-size: 3rem; 
-    font-weight: 800;
-    margin-bottom: 20px; 
-}
+# --- ОБЩИЕ СТИЛИ ДЛЯ ИНФОРМАЦИОННЫХ МОДАЛЬНЫХ ОКНО ---
+MODAL_STYLES = """
+    .footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 25px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; cursor: pointer; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--primary); }
+    
+    /* Стили окон */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.85); display: flex; align-items: center;
+        justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-box {
+        background-color: var(--card-bg); width: 90%; max-width: 550px;
+        padding: 35px; border-radius: 16px; border: 1px solid #333344;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;
+        transform: translateY(-20px); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-box { transform: translateY(0); }
+    .modal-close {
+        position: absolute; top: 15px; right: 20px; background: none; border: none;
+        color: var(--text-muted); font-size: 2rem; cursor: pointer; transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--primary); }
+    .modal-box h3 { margin-top: 0; color: var(--primary); font-size: 1.6rem; border-bottom: 1px solid #28283a; padding-bottom: 10px; }
+    .modal-box p { line-height: 1.6; color: #d1d1d6; font-size: 0.95rem; }
+    .admin-contact-item { background: #13131c; padding: 12px 18px; border-radius: 8px; margin-top: 10px; border-left: 3px solid var(--primary); font-weight: 600; }
 """
 
-# 1. Создаем index.html (запись обычным текстом без f-строк во избежание багов)
-index_html_content = """<!DOCTYPE html>
+# --- ОБЩИЙ СКРИПТ ДЛЯ УПРАВЛЕНИЯ ОКНАМИ ---
+MODAL_SCRIPT = """
+<script>
+    function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = 'auto'; }
+    // Закрытие при клике на темную область вокруг окна
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+</script>
+"""
+
+INDEX_HTML = f"""
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная | Films_Iliaz</title>
-    <meta name="monetag" content="8a4bbe65dee28e911fefcd608f183f21">
+    <title>Films_Iliaz — Лучшая База Фильмов</title>
     <style>
-""" + SHARED_CSS + """
-        .hero { 
-            padding: 160px 20px; 
-            text-align: center; 
-            background: radial-gradient(circle at center, #1b1216 0%, #08080a 100%); 
-            min-height: 55vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .hero p { 
-            font-size: 1.35rem; 
-            color: #9ca3af; 
-            max-width: 650px; 
-            line-height: 1.7;
-            margin-top: 15px;
-        }
-        .browse-btn {
-            margin-top: 35px;
-            background-color: #ff2e3b;
-            color: white;
-            padding: 15px 32px;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 50px;
-            font-size: 1.15rem;
-            box-shadow: 0 5px 20px rgba(255, 46, 59, 0.45);
-            transition: 0.3s;
-        }
-        .browse-btn:hover {
-            background-color: #e01b28;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 46, 59, 0.7);
-        }
+        :root {{
+            --bg-dark: #0f0f12;
+            --card-bg: #1a1a24;
+            --primary: #ff4a5a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0b0;
+        }}
+        body {{ font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }}
+        header {{ background: linear-gradient(135deg, #161623 0%, #0b0b11 100%); padding: 30px 20px; text-align: center; border-bottom: 4px solid var(--primary); }}
+        header h1 {{ margin: 0; font-size: 3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; }}
+        header p {{ margin: 10px 0 0 0; color: var(--text-muted); }}
+        .container {{ max-width: 1300px; margin: 40px auto; padding: 0 25px; }}
+        .genre-section {{ margin-bottom: 60px; }}
+        .genre-header {{ border-bottom: 2px solid #252535; padding-bottom: 10px; margin-bottom: 30px; }}
+        .genre-title {{ font-size: 2rem; margin: 0; }}
+        .movies-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 35px; }}
+        .movie-card {{
+            background-color: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+            text-decoration: none; color: inherit; display: flex; flex-direction: column; border: 1px solid #222232; transition: transform 0.3s;
+        }}
+        .movie-card:hover {{ transform: translateY(-5px); border-color: var(--primary); }}
+        .poster-wrapper {{ width: 100%; height: 350px; position: relative; }}
+        .poster-wrapper img {{ width: 100%; height: 100%; object-fit: cover; }}
+        .rating-badge {{ position: absolute; top: 15px; right: 15px; background-color: rgba(0, 0, 0, 0.85); color: #ffc107; padding: 5px 10px; border-radius: 6px; font-weight: bold; }}
+        .movie-content {{ padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }}
+        .movie-title {{ font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0; }}
+        .movie-meta {{ font-size: 0.9rem; color: var(--text-muted); }}
+        footer {{ text-align: center; padding: 40px 20px; color: var(--text-muted); background-color: #0b0b0e; border-top: 1px solid #1c1c28; }}
+        {MODAL_STYLES}
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/" class="logo">Films_Iliaz</a>
-        <a href="/genre/action">Боевики</a>
-        <a href="/genre/comedy">Комедии</a>
-        <a href="/genre/fantasy">Фэнтези</a>
-        <a href="/about">О проекте</a>
-    </nav>
-    <div class="hero">
-        <h1>Добро пожаловать в <span class="accent">Films_Iliaz Premium</span></h1>
-        <p>Интерактивная медиа-лаборатория Ильяза. Читайте и оставляйте настоящие отзывы, смотрите трейлеры прямо в плеере и сохраняйте любимое кино!</p>
-        <a href="/genre/action" class="browse-btn">Войти в кинотеатр</a>
-    </div>
-</body>
-</html>"""
-
-with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-    f.write(index_html_content)
-
-# 2. Создаем genre.html (Без использования f-строк, чтобы {} в JS не вызывали ошибок компиляции Python)
-genre_html_content = """<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ genre_title }} | Films_Iliaz</title>
-    <style>
-""" + SHARED_CSS + """
-        h1 { text-align: center; margin-bottom: 10px; }
-
-        /* Поиск */
-        .search-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0 10px;
-        }
-        .search-input {
-            width: 100%;
-            max-width: 500px;
-            padding: 14px 24px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: #121215;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .search-input:focus {
-            border-color: #ff2e3b;
-            box-shadow: 0 0 15px rgba(255, 46, 59, 0.3);
-            background-color: #18181f;
-        }
-
-        /* Сетка фильмов */
-        .films-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 40px; 
-            margin-top: 40px; 
-        }
-        .film-card { 
-            background-color: #111114; 
-            border-radius: 20px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
-            display: flex; 
-            flex-direction: column; 
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        .film-card:hover { 
-            transform: translateY(-6px); 
-            box-shadow: 0 15px 35px rgba(255, 46, 59, 0.2); 
-            border-color: rgba(255, 46, 59, 0.15);
-        }
-        .film-poster-wrapper {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            overflow: hidden;
-        }
-        .film-poster { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            transition: transform 0.5s ease;
-        }
-        .film-card:hover .film-poster {
-            transform: scale(1.04);
-        }
-
-        /* Лайки */
-        .like-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #ffffff;
-            font-size: 1.3rem;
-            z-index: 10;
-        }
-        .like-btn:hover { transform: scale(1.15); }
-        .like-btn.liked { color: #ff2e3b; text-shadow: 0 0 8px rgba(255, 46, 59, 0.6); }
-
-        .film-info { 
-            padding: 25px; 
-            display: flex; 
-            flex-direction: column; 
-            flex-grow: 1; 
-        }
-        .film-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-        .film-title { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            font-weight: 700;
-            line-height: 1.2; 
-        }
-        .film-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        .film-year { 
-            font-size: 0.85rem; 
-            color: #ff2e3b; 
-            font-weight: 800; 
-            background: rgba(255, 46, 59, 0.1);
-            padding: 3px 10px;
-            border-radius: 20px;
-        }
-        .film-rating {
-            font-size: 0.9rem;
-            color: #ffb800;
-            font-weight: bold;
-        }
-        .film-desc { 
-            font-size: 0.95rem; 
-            color: #9ca3af; 
-            line-height: 1.6; 
-            margin-bottom: 22px; 
-            flex-grow: 1; 
-        }
-
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        .watch-btn { 
-            background-color: #ff2e3b; 
-            color: white; 
-            text-align: center; 
-            text-decoration: none; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            transition: all 0.2s ease; 
-            cursor: pointer;
-            border: none;
-        }
-        .watch-btn:hover { background-color: #e01b28; }
-
-        .reviews-toggle-btn {
-            background-color: #24242b;
-            color: #e5e7eb;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .reviews-toggle-btn:hover { background-color: #2f2f38; }
-
-        /* СЕКЦИЯ ОТЗЫВОВ */
-        .reviews-panel {
-            display: none; 
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding-top: 20px;
-            margin-top: 15px;
-        }
-        .reviews-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding-right: 5px;
-        }
-        .reviews-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .reviews-list::-webkit-scrollbar-thumb {
-            background: #2f2f38;
-            border-radius: 4px;
-        }
-        .review-item {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-size: 0.88rem;
-        }
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            color: #9ca3af;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
-        .review-stars { color: #ffb800; }
-        .review-text { color: #d1d5db; line-height: 1.4; }
-
-        /* Форма написания отзыва */
-        .review-form {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .review-form input, .review-form textarea {
-            background: #18181f;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        .review-form input:focus, .review-form textarea:focus {
-            border-color: #ff2e3b;
-        }
-        .review-form-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .star-rating-select {
-            display: flex;
-            gap: 3px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: #374151;
-        }
-        .star-rating-select span:hover,
-        .star-rating-select span.active {
-            color: #ffb800;
-        }
-        .submit-review-btn {
-            background-color: rgba(255, 46, 59, 0.15);
-            color: #ff2e3b;
-            border: 1px solid rgba(255, 46, 59, 0.3);
-            padding: 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .submit-review-btn:hover {
-            background-color: #ff2e3b;
-            color: white;
-        }
-
-        /* КИНОТЕАТР: Встроенный модальный плеер */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.92);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .modal.active {
-            display: flex;
-            opacity: 1;
-        }
-        .modal-content {
-            position: relative;
-            width: 85%;
-            max-width: 850px;
-            aspect-ratio: 16/9;
-            background: black;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(255, 46, 59, 0.3);
-        }
-        .modal-content iframe {
-            width: 100%; height: 100%; border: none;
-        }
-        .close-modal {
-            position: absolute;
-            top: -45px; right: 0;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        .close-modal:hover { color: #ff2e3b; }
-
-        .no-results {
-            text-align: center; font-size: 1.2rem; color: #6b7280; margin-top: 50px; display: none; width: 100%; grid-column: 1 / -1;
-        }
-    </style>
-</head>
-<body>
-    <nav>
-        <a href="/" class="logo">Films_Iliaz</a>
-        <a href="/genre/action">Боевики</a>
-        <a href="/genre/comedy">Комедии</a>
-        <a href="/genre/fantasy">Фэнтези</a>
-        <a href="/about">О проекте</a>
-    </nav>
+    <header>
+        <h1>Films_Iliaz</h1>
+        <p>Индивидуальная онлайн-галерея твоих любимых фильмов</p>
+    </header>
     <div class="container">
-        <h1>Жанр: <span class="accent">{{ genre_title }}</span></h1>
-
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Начните вводить название фильма для поиска...">
-        </div>
-
-        <div class="films-grid" id="filmsGrid">
-            {% for film in films %}
-            <div class="film-card" data-id="{{ film.id }}" data-title="{{ film.title | lower }}">
-                <div class="film-poster-wrapper">
-                    <button class="like-btn" onclick="toggleLike(this, '{{ film.title }}')">❤</button>
-                    <img src="{{ film.image }}" alt="{{ film.title }}" class="film-poster">
-                </div>
-                <div class="film-info">
-                    <div class="film-header">
-                        <h3 class="film-title">{{ film.title }}</h3>
+        <!-- ФАНТАСТИКА, БОЕВИКИ, КОМЕДИИ, УЖАСЫ -->
+        {{% for genre in ["Фантастика", "Боевики", "Комедии", "Ужасы"] %}}
+        <div class="genre-section">
+            <div class="genre-header"><h2 class="genre-title">{{{{ genre }}}}</h2></div>
+            <div class="movies-grid">
+                {{% for movie in movies if movie.genre == genre %}}
+                <a href="{{{{ url_for('movie_detail', movie_id=movie.id) }}}}" class="movie-card">
+                    <div class="poster-wrapper">
+                        <img src="{{{{ url_for('proxy_image', url=movie.poster) }}}}" alt="{{{{ movie.title }}}}">
+                        <div class="rating-badge">★ {{{{ movie.rating }}}}</div>
                     </div>
-                    <div class="film-meta">
-                        <span class="film-year">{{ film.year }} год</span>
-                        <span class="film-rating" id="rating-{{ film.id }}">⭐ -- (0 отзывов)</span>
-                    </div>
-                    <p class="film-desc">{{ film.desc }}</p>
-
-                    <div class="button-group">
-                        <button class="watch-btn" onclick="openTrailer('{{ film.trailer_id }}')">▶ Трейлер</button>
-                        <button class="reviews-toggle-btn" onclick="toggleReviews('{{ film.id }}')">💬 Отзывы</button>
-                    </div>
-
-                    <!-- Интерактивная вкладка отзывов -->
-                    <div class="reviews-panel" id="reviews-panel-{{ film.id }}">
-                        <div class="reviews-list" id="reviews-list-{{ film.id }}"></div>
-
-                        <!-- Форма написания нового отзыва -->
-                        <div class="review-form">
-                            <div class="review-form-row">
-                                <input type="text" id="author-{{ film.id }}" placeholder="Ваше имя" required style="flex-grow: 1;">
-                                <div class="star-rating-select" id="star-select-{{ film.id }}">
-                                    <span onclick="setFormStars('{{ film.id }}', 1)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 2)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 3)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 4)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 5)">★</span>
-                                </div>
-                            </div>
-                            <textarea id="comment-{{ film.id }}" placeholder="Напишите свое мнение о фильме..." rows="2" required></textarea>
-                            <button class="submit-review-btn" onclick="submitReview('{{ film.id }}')">Отправить отзыв</button>
+                    <div class="movie-content">
+                        <div>
+                            <div class="movie-title">{{{{ movie.title }}}}</div>
+                            <div class="movie-meta">{{{{ movie.year }}}} • {{{{ movie.duration }}}}</div>
                         </div>
                     </div>
-                </div>
+                </a>
+                {{% endfor %}}
             </div>
-            {% endfor %}
-            <div class="no-results" id="noResults">Ничего не найдено. Попробуйте изменить поисковый запрос!</div>
+        </div>
+        {{% endfor %}}
+    </div>
+    
+    <footer>
+        <div>&copy; 2026 Films_Iliaz. Все права защищены.</div>
+        <div class="footer-links">
+            <a onclick="openModal('aboutModal')">О сайте</a>
+            <a onclick="openModal('adminModal')">Связаться с админом</a>
+            <a onclick="openModal('cookieModal')">Файлы cookie</a>
+        </div>
+    </footer>
+
+    <!-- Окна инфо-панелей -->
+    <div id="aboutModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+            <h3>О проекте Films_Iliaz</h3>
+            <p><strong>Films_Iliaz</strong> — это современный, стильный и быстрый веб-кинотеатр, созданный на мощном фреймворке Python Flask. Наша цель — предоставить удобный каталог и мгновенный доступ к шедеврам мирового кинематографа в один клик без сложных регистраций.</p>
         </div>
     </div>
 
-    <!-- Встроенный модальный видеоплеер -->
-    <div class="modal" id="videoModal" onclick="closeTrailer()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <span class="close-modal" onclick="closeTrailer()">&times;</span>
-            <iframe id="trailerFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div id="adminModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
+            <h3>Связаться с администрацией</h3>
+            <p>Возникли вопросы, предложения по рекламе или хотите добавить свой любимый фильм на сайт? Напишите напрямую главному создателю проекта:</p>
+            <div class="admin-contact-item">Email: admin@films-iliaz.ru</div>
+            <div class="admin-contact-item">Telegram: @iliaz_media</div>
         </div>
     </div>
 
-    <script>
-        // --- 1. ЖИВОЙ ПОИСК ---
-        const searchInput = document.getElementById('searchInput');
-        const filmCards = document.querySelectorAll('.film-card');
-        const noResults = document.getElementById('noResults');
+    <div id="cookieModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('cookieModal')">&times;</button>
+            <h3>Политика использования файлов Cookie</h3>
+            <p>Мы используем файлы cookie (куки), чтобы сделать твою работу с сайтом максимально комфортной. Они помогают сохранять добавленные отзывы, запоминать выбранные настройки дизайна и ускорять загрузку изображений. Оставаясь на сайте, ты соглашаешься с условиями хранения куки.</p>
+        </div>
+    </div>
 
-        searchInput.addEventListener('input', function() {
-            const filterValue = searchInput.value.toLowerCase().trim();
-            let hasVisibleCards = false;
-
-            filmCards.forEach(card => {
-                const title = card.getAttribute('data-title');
-                if (title.includes(filterValue)) {
-                    card.style.display = 'flex';
-                    hasVisibleCards = true;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            noResults.style.display = hasVisibleCards ? 'none' : 'block';
-        });
-
-        // --- 2. ИЗБРАННОЕ (ЛАЙКИ) ---
-        function toggleLike(btn, filmTitle) {
-            let likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
-            if (likedFilms.includes(filmTitle)) {
-                likedFilms = likedFilms.filter(item => item !== filmTitle);
-                btn.classList.remove('liked');
-            } else {
-                likedFilms.push(filmTitle);
-                btn.classList.add('liked');
-            }
-            localStorage.setItem('likedFilms', JSON.stringify(likedFilms));
-        }
-
-        // --- 3. СИСТЕМА ИНТЕРАКТИВНЫХ ОТЗЫВОВ И ЗВЕЗД ---
-        const activeStarsData = {}; 
-
-        function toggleReviews(filmId) {
-            const panel = document.getElementById(`reviews-panel-${filmId}`);
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function setFormStars(filmId, rating) {
-            activeStarsData[filmId] = rating;
-            const starsContainer = document.getElementById(`star-select-${filmId}`);
-            const stars = starsContainer.querySelectorAll('span');
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
-                }
-            });
-        }
-
-        function loadReviewsAndRating() {
-            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {};
-
-            filmCards.forEach(card => {
-                const filmId = card.getAttribute('data-id');
-                const listContainer = document.getElementById(`reviews-list-${filmId}`);
-                const reviews = dbReviews[filmId] || [];
-
-                listContainer.innerHTML = '';
-                if (reviews.length === 0) {
-                    listContainer.innerHTML = '<div style="color: #6b7280; text-align: center; padding: 10px 0;">Отзывов пока нет. Будьте первыми!</div>';
-                } else {
-                    reviews.forEach(r => {
-                        const starsHtml = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-                        listContainer.innerHTML += `
-                            <div class="review-item">
-                                <div class="review-header">
-                                    <span>${r.author}</span>
-                                    <span class="review-stars">${starsHtml}</span>
-                                </div>
-                                <div class="review-text">${r.comment}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                const ratingBadge = document.getElementById(`rating-${filmId}`);
-                if (reviews.length > 0) {
-                    const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
-                    const avg = (sum / reviews.length).toFixed(1);
-                    ratingBadge.innerHTML = `⭐ ${avg}/5 (${reviews.length} отз.)`;
-                } else {
-                    ratingBadge.innerHTML = `⭐ -- (0 отзывов)`;
-                }
-            });
-        }
-
-        function submitReview(filmId) {
-            const authorInput = document.getElementById(`author-${filmId}`);
-            const commentInput = document.getElementById(`comment-${filmId}`);
-            const rating = activeStarsData[filmId] || 0;
-
-            if (!authorInput.value.trim() || !commentInput.value.trim()) {
-                alert('Пожалуйста, заполните имя и напишите текст отзыва.');
-                return;
-            }
-            if (rating === 0) {
-                alert('Пожалуйста, выберите оценку фильма звездками.');
-                return;
-            }
-
-            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {};
-            if (!dbReviews[filmId]) dbReviews[filmId] = [];
-
-            dbReviews[filmId].unshift({
-                author: authorInput.value.trim(),
-                comment: commentInput.value.trim(),
-                rating: rating
-            });
-
-            localStorage.setItem('filmsReviews', JSON.stringify(dbReviews));
-
-            authorInput.value = '';
-            commentInput.value = '';
-            setFormStars(filmId, 0);
-
-            loadReviewsAndRating();
-        }
-
-        // --- 4. ОРИГИНАЛЬНЫЙ МОДАЛЬНЫЙ ТРЕЙЛЕР ПЛЕЕР ---
-        function openTrailer(youtubeId) {
-            const modal = document.getElementById('videoModal');
-            const iframe = document.getElementById('trailerFrame');
-            iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
-            modal.classList.add('active');
-        }
-
-        function closeTrailer() {
-            const modal = document.getElementById('videoModal');
-            const iframe = document.getElementById('trailerFrame');
-            iframe.src = '';
-            modal.classList.remove('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
-            const likeButtons = document.querySelectorAll('.like-btn');
-            likeButtons.forEach(btn => {
-                const cardTitle = btn.closest('.film-card').querySelector('.film-title').innerText;
-                if (likedFilms.includes(cardTitle)) btn.classList.add('liked');
-            });
-
-            loadReviewsAndRating();
-        });
-    </script>
+    {MODAL_SCRIPT}
 </body>
-</html>"""
+</html>
+"""
 
-with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-    f.write(index_html_content)
-
-# 2. Создаем genre.html (Без использования f-строк, чтобы {} в JS не вызывали ошибок компиляции Python)
-genre_html_content = """<!DOCTYPE html>
+MOVIE_HTML = f"""
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ genre_title }} | Films_Iliaz</title>
+    <title>紧张 movie.title 紧张 — Films_Iliaz</title>
     <style>
-""" + SHARED_CSS + """
-        h1 { text-align: center; margin-bottom: 10px; }
+        :root {{
+            --bg-dark: #0f0f12;
+            --card-bg: #1a1a24;
+            --primary: #ff4a5a;
+            --accent-green: #00c853;
+            --text-main: #ffffff;
+            --text-muted: #a0a0b0;
+        }}
+        body {{ font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }}
+        header {{ background-color: #161623; padding: 20px 40px; border-bottom: 3px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }}
+        header h1 {{ margin: 0; font-size: 2rem; color: var(--primary); }}
+        .back-btn {{ color: white; text-decoration: none; font-weight: 600; background-color: #2b2b3d; padding: 10px 20px; border-radius: 8px; }}
+        .container {{ max-width: 1100px; margin: 50px auto; padding: 0 25px; }}
+        .movie-main-box {{ display: flex; gap: 50px; background-color: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid #222232; }}
+        .poster-box {{ width: 320px; height: 470px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }}
+        .poster-box img {{ width: 100%; height: 100%; object-fit: cover; }}
+        .info-box {{ flex-grow: 1; }}
+        .info-box h2 {{ margin: 0 0 15px 0; font-size: 2.8rem; }}
+        
+        .watch-link {{
+            display: inline-block; background-color: var(--accent-green); color: black;
+            padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
+            text-decoration: none; margin-bottom: 25px; transition: all 0.2s;
+            text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,200,83,0.3);
+            text-align: center;
+        }}
+        .watch-link:hover {{ background-color: #00eedb; box-shadow: 0 4px 20px rgba(0,238,219,0.4); }}
 
-        /* Поиск */
-        .search-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0 10px;
-        }
-        .search-input {
-            width: 100%;
-            max-width: 500px;
-            padding: 14px 24px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: #121215;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .search-input:focus {
-            border-color: #ff2e3b;
-            box-shadow: 0 0 15px rgba(255, 46, 59, 0.3);
-            background-color: #18181f;
-        }
-
-        /* Сетка фильмов */
-        .films-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 40px; 
-            margin-top: 40px; 
-        }
-        .film-card { 
-            background-color: #111114; 
-            border-radius: 20px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
-            display: flex; 
-            flex-direction: column; 
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        .film-card:hover { 
-            transform: translateY(-6px); 
-            box-shadow: 0 15px 35px rgba(255, 46, 59, 0.2); 
-            border-color: rgba(255, 46, 59, 0.15);
-        }
-        .film-poster-wrapper {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            overflow: hidden;
-        }
-        .film-poster { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            transition: transform 0.5s ease;
-        }
-        .film-card:hover .film-poster {
-            transform: scale(1.04);
-        }
-
-        /* Лайки */
-        .like-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #ffffff;
-            font-size: 1.3rem;
-            z-index: 10;
-        }
-        .like-btn:hover { transform: scale(1.15); }
-        .like-btn.liked { color: #ff2e3b; text-shadow: 0 0 8px rgba(255, 46, 59, 0.6); }
-
-        .film-info { 
-            padding: 25px; 
-            display: flex; 
-            flex-direction: column; 
-            flex-grow: 1; 
-        }
-        .film-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-        .film-title { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            font-weight: 700;
-            line-height: 1.2; 
-        }
-        .film-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        .film-year { 
-            font-size: 0.85rem; 
-            color: #ff2e3b; 
-            font-weight: 800; 
-            background: rgba(255, 46, 59, 0.1);
-            padding: 3px 10px;
-            border-radius: 20px;
-        }
-        .film-rating {
-            font-size: 0.9rem;
-            color: #ffb800;
-            font-weight: bold;
-        }
-        .film-desc { 
-            font-size: 0.95rem; 
-            color: #9ca3af; 
-            line-height: 1.6; 
-            margin-bottom: 22px; 
-            flex-grow: 1; 
-        }
-
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        .watch-btn { 
-            background-color: #ff2e3b; 
-            color: white; 
-            text-align: center; 
-            text-decoration: none; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            transition: all 0.2s ease; 
-            cursor: pointer;
-            border: none;
-        }
-        .watch-btn:hover { background-color: #e01b28; }
-
-        .reviews-toggle-btn {
-            background-color: #24242b;
-            color: #e5e7eb;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .reviews-toggle-btn:hover { background-color: #2f2f38; }
-
-        /* СЕКЦИЯ ОТЗЫВОВ */
-        .reviews-panel {
-            display: none; 
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding-top: 20px;
-            margin-top: 15px;
-        }
-        .reviews-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding-right: 5px;
-        }
-        .reviews-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .reviews-list::-webkit-scrollbar-thumb {
-            background: #2f2f38;
-            border-radius: 4px;
-        }
-        .review-item {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-size: 0.88rem;
-        }
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            color: #9ca3af;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
-        .review-stars { color: #ffb800; }
-        .review-text { color: #d1d5db; line-height: 1.4; }
-
-        /* Форма написания отзыва */
-        .review-form {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .review-form input, .review-form textarea {
-            background: #18181f;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        .review-form input:focus, .review-form textarea:focus {
-            border-color: #ff2e3b;
-        }
-        .review-form-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .star-rating-select {
-            display: flex;
-            gap: 3px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: #374151;
-        }
-        .star-rating-select span:hover,
-        .star-rating-select span.active {
-            color: #ffb800;
-        }
-        .submit-review-btn {
-            background-color: rgba(255, 46, 59, 0.15);
-            color: #ff2e3b;
-            border: 1px solid rgba(255, 46, 59, 0.3);
-            padding: 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .submit-review-btn:hover {
-            background-color: #ff2e3b;
-            color: white;
-        }
-
-        /* КИНОТЕАТР: Встроенный модальный плеер */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.92);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .modal.active {
-            display: flex;
-            opacity: 1;
-        }
-        .modal-content {
-            position: relative;
-            width: 85%;
-            max-width: 850px;
-            aspect-ratio: 16/9;
-            background: black;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(255, 46, 59, 0.3);
-        }
-        .modal-content iframe {
-            width: 100%; height: 100%; border: none;
-        }
-        .close-modal {
-            position: absolute;
-            top: -45px; right: 0;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        .close-modal:hover { color: #ff2e3b; }
-
-        .no-results {
-            text-align: center; font-size: 1.2rem; color: #6b7280; margin-top: 50px; display: none; width: 100%; grid-column: 1 / -1;
-        }
+        .meta-table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; }}
+        .meta-table td {{ padding: 10px 0; border-bottom: 1px solid #28283a; }}
+        .meta-table td.label {{ color: var(--text-muted); width: 140px; }}
+        
+        .reviews-wrapper {{ background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }}
+        .review-item {{ background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }}
+        .review-user {{ font-weight: bold; color: var(--primary); }}
+        .input-field {{ width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3a3a52; background-color: #121218; color: white; margin-bottom: 15px; box-sizing: border-box;}}
+        .btn-submit {{ background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer;}}
+        
+        footer {{ text-align: center; padding: 40px 20px; color: var(--text-muted); background-color: #0b0b0e; border-top: 1px solid #1c1c28; margin-top: 50px;}}
+        {MODAL_STYLES}
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/" class="logo">Films_Iliaz</a>
-        <a href="/genre/action">Боевики</a>
-        <a href="/genre/comedy">Комедии</a>
-        <a href="/genre/fantasy">Фэнтези</a>
-        <a href="/about">О проекте</a>
-    </nav>
+    <header>
+        <h1>Films_Iliaz</h1>
+        <a href="{{{{ url_for('index') }}}}" class="back-btn">← На главную</a>
+    </header>
     <div class="container">
-        <h1>Жанр: <span class="accent">{{ genre_title }}</span></h1>
-
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Начните вводить название фильма для поиска...">
-        </div>
-
-        <div class="films-grid" id="filmsGrid">
-            {% for film in films %}
-            <div class="film-card" data-id="{{ film.id }}" data-title="{{ film.title | lower }}">
-                <div class="film-poster-wrapper">
-                    <button class="like-btn" onclick="toggleLike(this, '{{ film.title }}')">❤</button>
-                    <img src="{{ film.image }}" alt="{{ film.title }}" class="film-poster">
-                </div>
-                <div class="film-info">
-                    <div class="film-header">
-                        <h3 class="film-title">{{ film.title }}</h3>
-                    </div>
-                    <div class="film-meta">
-                        <span class="film-year">{{ film.year }} год</span>
-                        <span class="film-rating" id="rating-{{ film.id }}">⭐ -- (0 отзывов)</span>
-                    </div>
-                    <p class="film-desc">{{ film.desc }}</p>
-
-                    <div class="button-group">
-                        <button class="watch-btn" onclick="openTrailer('{{ film.trailer_id }}')">▶ Трейлер</button>
-                        <button class="reviews-toggle-btn" onclick="toggleReviews('{{ film.id }}')">💬 Отзывы</button>
-                    </div>
-
-                    <!-- Интерактивная вкладка отзывов -->
-                    <div class="reviews-panel" id="reviews-panel-{{ film.id }}">
-                        <div class="reviews-list" id="reviews-list-{{ film.id }}"></div>
-
-                        <!-- Форма написания нового отзыва -->
-                        <div class="review-form">
-                            <div class="review-form-row">
-                                <input type="text" id="author-{{ film.id }}" placeholder="Ваше имя" required style="flex-grow: 1;">
-                                <div class="star-rating-select" id="star-select-{{ film.id }}">
-                                    <span onclick="setFormStars('{{ film.id }}', 1)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 2)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 3)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 4)">★</span>
-                                    <span onclick="setFormStars('{{ film.id }}', 5)">★</span>
-                                </div>
-                            </div>
-                            <textarea id="comment-{{ film.id }}" placeholder="Напишите свое мнение о фильме..." rows="2" required></textarea>
-                            <button class="submit-review-btn" onclick="submitReview('{{ film.id }}')">Отправить отзыв</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-            <div class="no-results" id="noResults">Ничего не найдено. Попробуйте изменить поисковый запрос!</div>
-        </div>
-    </div>
-
-    <!-- Встроенный модальный видеоплеер -->
-    <div class="modal" id="videoModal" onclick="closeTrailer()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <span class="close-modal" onclick="closeTrailer()">&times;</span>
-            <iframe id="trailerFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <script>
-        // --- 1. ЖИВОЙ ПОИСК ---
-        const searchInput = document.getElementById('searchInput');
-        const filmCards = document.querySelectorAll('.film-card');
-        const noResults = document.getElementById('noResults');
-
-        searchInput.addEventListener('input', function() {
-            const filterValue = searchInput.value.toLowerCase().trim();
-            let hasVisibleCards = false;
-
-            filmCards.forEach(card => {
-                const title = card.getAttribute('data-title');
-                if (title.includes(filterValue)) {
-                    card.style.display = 'flex';
-                    hasVisibleCards = true;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            noResults.style.display = hasVisibleCards ? 'none' : 'block';
-        });
-
-        // --- 2. ИЗБРАННОЕ (ЛАЙКИ) ---
-        function toggleLike(btn, filmTitle) {
-            let likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
-            if (likedFilms.includes(filmTitle)) {
-                likedFilms = likedFilms.filter(item => item !== filmTitle);
-                btn.classList.remove('liked');
-            } else {
-                likedFilms.push(filmTitle);
-                btn.classList.add('liked');
-            }
-            localStorage.setItem('likedFilms', JSON.stringify(likedFilms));
-        }
-
-        // --- 3. СИСТЕМА ИНТЕРАКТИВНЫХ ОТЗЫВОВ И ЗВЕЗД ---
-        const activeStarsData = {}; 
-
-        function toggleReviews(filmId) {
-            const panel = document.getElementById(`reviews-panel-${filmId}`);
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function setFormStars(filmId, rating) {
-            activeStarsData[filmId] = rating;
-            const starsContainer = document.getElementById(`star-select-${filmId}`);
-            const stars = starsContainer.querySelectorAll('span');
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
-                }
-            });
-        }
-
-        function loadReviewsAndRating() {
-            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {};
-
-            filmCards.forEach(card => {
-                const filmId = card.getAttribute('data-id');
-                const listContainer = document.getElementById(`reviews-list-${filmId}`);
-                const reviews = dbReviews[filmId] || [];
-
-                listContainer.innerHTML = '';
-                if (reviews.length === 0) {
-                    listContainer.innerHTML = '<div style="color: #6b7280; text-align: center; padding: 10px 0;">Отзывов пока нет. Будьте первыми!</div>';
-                } else {
-                    reviews.forEach(r => {
-                        const starsHtml = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-                        listContainer.innerHTML += `
-                            <div class="review-item">
-                                <div class="review-header">
-                                    <span>${r.author}</span>
-                                    <span class="review-stars">${starsHtml}</span>
-                                </div>
-                                <div class="review-text">${r.comment}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                const ratingBadge = document.getElementById(`rating-${filmId}`);
-                if (reviews.length > 0) {
-                    const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
-                    const avg = (sum / reviews.length).toFixed(1);
-                    ratingBadge.innerHTML = `⭐ ${avg}/5 (${reviews.length} отз.)`;
-                } else {
-                    ratingBadge.innerHTML = `⭐ -- (0 отзывов)`;
-                }
-            });
-        }
-
-        function submitReview(filmId) {
-            const authorInput = document.getElementById(`author-${filmId}`);
-            const commentInput = document.getElementById(`comment-${filmId}`);
-            const rating = activeStarsData[filmId] || 0;
-
-            if (!authorInput.value.trim() || !commentInput.value.trim()) {
-                alert('Пожалуйста, заполните имя и напишите текст отзыва.');
-                return;
-            }
-            if (rating === 0) {
-                alert('Пожалуйста, выберите оценку фильма звездками.');
-                return;
-            }
-
-            const dbReviews = JSON.parse(localStorage.getItem('filmsReviews')) || {};
-            if (!dbReviews[filmId]) dbReviews[filmId] = [];
-
-            dbReviews[filmId].unshift({
-                author: authorInput.value.trim(),
-                comment: commentInput.value.trim(),
-                rating: rating
-            });
-
-            localStorage.setItem('filmsReviews', JSON.stringify(dbReviews));
-
-            authorInput.value = '';
-            commentInput.value = '';
-            setFormStars(filmId, 0);
-
-            loadReviewsAndRating();
-        }
-
-        // --- 4. ОРИГИНАЛЬНЫЙ МОДАЛЬНЫЙ ТРЕЙЛЕР ПЛЕЕР ---
-        function openTrailer(youtubeId) {
-            const modal = document.getElementById('videoModal');
-            const iframe = document.getElementById('trailerFrame');
-            iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
-            modal.classList.add('active');
-        }
-
-        function closeTrailer() {
-            const modal = document.getElementById('videoModal');
-            const iframe = document.getElementById('trailerFrame');
-            iframe.src = '';
-            modal.classList.remove('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const likedFilms = JSON.parse(localStorage.getItem('likedFilms')) || [];
-            const likeButtons = document.querySelectorAll('.like-btn');
-            likeButtons.forEach(btn => {
-                const cardTitle = btn.closest('.film-card').querySelector('.film-title').innerText;
-                if (likedFilms.includes(cardTitle)) btn.classList.add('liked');
-            });
-
-            loadReviewsAndRating();
-        });
-    </script>
-</body>
-</html>"""
-
-with open(os.path.join(TEMPLATES_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-    f.write(index_html_content)
-
-# 3. Создаем about.html (Обычным безопасным текстом)
-about_html_content = """<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>О проекте | Films_Iliaz</title>
-    <style>
-""" + SHARED_CSS + """
-        .about-box { 
-            text-align: center; 
-            padding: 65px 35px; 
-            max-width: 750px; 
-            margin: 50px auto 0; 
-            background: #111114; 
-            border-radius: 24px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .about-box p { 
-            font-size: 1.25rem; 
-            color: #9ca3af; 
-            line-height: 1.75; 
-        }
-        .tech-list {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        .tech-tag {
-            background: rgba(255, 46, 59, 0.1);
-            color: #ff2e3b;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            border: 1px solid rgba(255, 46, 59, 0.2);
-        }
-    </style>
-</head>
-<body>
-    <nav>
-        <a href="/" class="logo">Films_Iliaz</a>
-        <a href="/genre/action">Боевики</a>
-        <a href="/genre/comedy">Комедии</a>
-        <a href="/genre/fantasy">Фэнтези</a>
-        <a href="/about">О проекте</a>
-    </nav>
-    <div class="container">
-        <div class="about-box">
-            <h1>Киноплатформа <span class="accent">Films_Iliaz Premium</span></h1>
-            <p>Это технологичный, полностью интерактивный развлекательный веб-сервис. Проект построен на Flask (Python) для гибкой маршрутизации и чистого HTML5/CSS3/JS с применением асинхронного сохранения состояния на клиенте (Local Storage).</p>
-            <div class="tech-list">
-                <span class="tech-tag">Python & Flask</span>
-                <span class="tech-tag">Modal Theatre Player</span>
-                <span class="tech-tag">Dynamic Star Rating System</span>
-                <span class="tech-tag">Client State Engines</span>
+        <div class="movie-main-box">
+            <div class="poster-box"><img src="{{{{ url_for('proxy_image', url=movie.poster) }}}}" alt="{{{{ movie.title }}}}"></div>
+            <div class="info-box">
+                <h2>{{{{ movie.title }}}} ({{{{ movie.year }}}})</h2>
+                <a href="{{{{ movie.video_url }}}}" target="_blank" class="watch-link">Смотреть на Кинопоиске</a>
+                <table class="meta-table">
+                    <tr><td class="label">Жанр</td><td>{{{{ movie.genre }}}}</td></tr>
+                    <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{{{ movie.rating }}}}</td></tr>
+                    <tr><td class="label">Режиссер</td><td>{{{{ movie.director }}}}</td></tr>
+                    <tr><td class="label">Длительность</td><td>{{{{ movie.duration }}}}</td></tr>
+                    <tr><td class="label">В ролях</td><td>{{{{ movie.cast }}}}</td></tr>
+                </table>
+                <p style="line-height: 1.6; color: #d1d1d6;">{{{{ movie.description }}}}</p>
             </div>
         </div>
+        
+        <div class="reviews-wrapper">
+            <h3>Отзывы</h3>
+            {{% for r in reviews %}}
+                <div class="review-item"><div class="review-user">{{{{ r.name }}}}</div><div>{{{{ r.text }}}}</div></div>
+            {{% endfor %}}
+            <form action="{{{{ url_for('movie_detail', movie_id=movie.id) }}}}" method="POST" style="margin-top:25px;">
+                <input type="text" name="name" class="input-field" placeholder="Ваше имя" required>
+                <textarea name="review_text" class="input-field" placeholder="Ваш отзыв" style="min-height:100px;" required></textarea>
+                <button type="submit" class="btn-submit">Отправить</button>
+            </form>
+        </div>
     </div>
+
+    <footer>
+        <div>&copy; 2026 Films_Iliaz. Все права защищены.</div>
+        <div class="footer-links">
+            <a onclick="openModal('aboutModal')">О сайте</a>
+            <a onclick="openModal('adminModal')">Связаться с админом</a>
+            <a onclick="openModal('cookieModal')">Файлы cookie</a>
+        </div>
+    </footer>
+
+    <!-- Окна инфо-панелей -->
+    <div id="aboutModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+            <h3>О проекте Films_Iliaz</h3>
+            <p><strong>Films_Iliaz</strong> — это современный, стильный и быстрый веб-кинотеатр, созданный на мощном фреймворке Python Flask. Наша цель — предоставить удобный каталог и мгновенный доступ к шедеврам мирового кинематографа в один клик без сложных регистраций.</p>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
+            <h3>Связаться с администрацией</h3>
+            <p>Возникли вопросы, предложения по рекламе или хотите добавить свой любимый фильм на сайт? Напишите напрямую главному создателю проекта:</p>
+            <div class="admin-contact-item">Email: admin@films-iliaz.ru</div>
+            <div class="admin-contact-item">Telegram: @iliaz_media</div>
+        </div>
+    </div>
+
+    <div id="cookieModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('cookieModal')">&times;</button>
+            <h3>Политика использования файлов Cookie</h3>
+            <p>Мы используем файлы cookie (куки), чтобы сделать твою работу с сайтом максимально комфортной. Они помогают сохранять добавленные отзывы, запоминать выбранные настройки дизайна и ускорять загрузку изображений. Оставаясь на сайте, ты соглашаешься с условиями хранения куки.</p>
+        </div>
+    </div>
+
+    {MODAL_SCRIPT}
 </body>
-</html>"""
+</html>
+"""
 
-with open(os.path.join(TEMPLATES_DIR, 'about.html'), 'w', encoding='utf-8') as f:
-    f.write(about_html_content)
+@app.route('/proxy-image')
+def proxy_image():
+    image_url = request.args.get('url')
+    if not image_url: return "Missing url", 400
+    try:
+        req = urllib.request.Request(image_url, headers={'User-Agent': 'Mozilla/5.0', 'Referer': 'https://kinogo.my/'})
+        with urllib.request.urlopen(req, timeout=12) as response:
+            return Response(response.read(), content_type=response.headers.get('Content-Type', 'image/jpeg'))
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
-print("[УСПЕХ]: Ошибка f-строки исправлена! Новые HTML-шаблоны без проблем записаны.")
-
-
-# --- МАРШРУТЫ FLASK ---
 @app.route('/')
-def home():
-    return render_template('index.html')
+def index():
+    return render_template_string(INDEX_HTML, movies=MOVIES)
 
-
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-
-@app.route('/genre/<genre_name>')
-def genre(genre_name):
-    if genre_name in FILMS_DB:
-        data = FILMS_DB[genre_name]
-        return render_template('genre.html', genre_title=data['title'], films=data['list'])
-    else:
-        return "Жанр не найден", 404
-
+@app.route('/movie/<int:movie_id>', methods=['GET', 'POST'])
+def movie_detail(movie_id):
+    movie = next((m for m in MOVIES if m["id"] == movie_id), None)
+    if not movie: return "Фильм не найден", 404
+    if request.method == 'POST':
+        name = request.form.get('name', 'Аноним').strip()
+        text = request.form.get('review_text', '').strip()
+        if text: REVIEWS[movie_id].append({"name": name, "text": text})
+        return redirect(url_for('movie_detail', movie_id=movie_id))
+    return render_template_string(MOVIE_HTML, movie=movie, reviews=REVIEWS.get(movie_id, []))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
