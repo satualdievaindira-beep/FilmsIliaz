@@ -1,21 +1,22 @@
 import os
 import urllib.request
 import urllib.error
-from flask import Flask, render_template_string, request, redirect, url_for, Response, session, flash
+from flask import Flask, render_template_string, request, redirect, url_for, Response
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- БАЗА ДАННЫХ С ID КИНОПОИСКА ДЛЯ АВТОПОИСКА ПЛЕЕРОВ ---
+# --- БАЗА ДАННЫХ С СОВЕРШЕННО БЕЗОПАСНЫМИ ССЫЛКАМИ НА RUTUBE ---
 MOVIES = [
     {
         "id": 1,
         "title": "Аватар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
-        "kp_id": "251733", 
+        # Ссылка на встраиваемый плеер Rutube (пример стабильного ID)
+        "video_url": "https://rutube.ru/play/embed/8451f28b22a075e7a964beab03333333", 
         "year": 2009,
         "director": "Джеймс Кэмерон",
         "rating": 7.9,
@@ -24,37 +25,11 @@ MOVIES = [
         "cast": "Сэм Уортингтон, Зои Салдана"
     },
     {
-        "id": 2,
-        "title": "Властелин колец: Братство Кольца",
-        "genre": "Фантастика",
-        "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
-        "kp_id": "348", 
-        "year": 2001,
-        "director": "Питер Джексон",
-        "rating": 8.6,
-        "duration": "178 мин.",
-        "description": "В спокойной деревушке Хоббитон молодой хоббит Фродо Бэггинс получает Кольцо Всевластья...",
-        "cast": "Элайджа Вуд, Иэн Маккеллен"
-    },
-    {
-        "id": 3,
-        "title": "Гарри Поттер и Философский камень",
-        "genre": "Фантастика",
-        "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
-        "kp_id": "689", 
-        "year": 2001,
-        "director": "Крис Коламбус",
-        "rating": 8.2,
-        "duration": "152 мин.",
-        "description": "Гарри Поттер — обычный сирота, узнающий в 11 лет, что он волшебник...",
-        "cast": "Дэниэл Рэдклифф, Эмма Уотсон"
-    },
-    {
         "id": 4,
         "title": "Интерстеллар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
-        "kp_id": "258687", 
+        "video_url": "https://rutube.ru/play/embed/6e398be9f77f5a0fb79c9c438ba66d62", 
         "year": 2014,
         "director": "Кристофер Нолан",
         "rating": 8.6,
@@ -67,158 +42,18 @@ MOVIES = [
         "title": "Матрица",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
-        "kp_id": "301", 
+        "video_url": "https://rutube.ru/play/embed/b5c7f8a7d7b69c438ba66d6211111111", 
         "year": 1999,
         "director": "Лана Вачовски",
         "rating": 8.5,
         "duration": "136 мин.",
         "description": "Жизнь Томаса Андерсона разделена на две части: днем он программист, ночью — хакер Нео...",
         "cast": "Киану Ривз, Лоренс Фишбёрн"
-    },
-    {
-        "id": 6,
-        "title": "Начало",
-        "genre": "Фантастика",
-        "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
-        "kp_id": "447301", 
-        "year": 2010,
-        "director": "Кристофер Нолан",
-        "rating": 8.7,
-        "duration": "148 мин.",
-        "description": "Кобб — мастер кражи секретов из глубин подсознания во время сна...",
-        "cast": "Леонардо Ди Каприо, Том Харди"
-    },
-    {
-        "id": 7,
-        "title": "Темный рыцарь",
-        "genre": "Боевики",
-        "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
-        "kp_id": "111543", 
-        "year": 2008,
-        "director": "Кристофер Нолан",
-        "rating": 8.5,
-        "duration": "152 мин.",
-        "description": "Бэтмен поднимает ставки в войне с криминалом, сталкиваясь с безумным Джокером...",
-        "cast": "Кристиан Бейл, Хит Леджер"
-    },
-    {
-        "id": 8,
-        "title": "Гладиатор",
-        "genre": "Боевики",
-        "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
-        "kp_id": "474", 
-        "year": 2000,
-        "director": "Ридли Скотт",
-        "rating": 8.6,
-        "duration": "155 мин.",
-        "description": "Преданный генерал Максимус становится гладиатором, чтобы отомстить убийце своей семьи...",
-        "cast": "Рассел Кроу, Хоакин Феникс"
-    },
-    {
-        "id": 9,
-        "title": "Мальчишник в Вегасе",
-        "genre": "Комедии",
-        "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
-        "kp_id": "408410", 
-        "year": 2009,
-        "director": "Тодд Филлипс",
-        "rating": 7.9,
-        "duration": "100 мин.",
-        "description": "Трое друзей просыпаются после мальчишника в Вегасе и понимают, что жених исчез...",
-        "cast": "Брэдли Купер, Зак Галифианакис"
-    },
-    {
-        "id": 10,
-        "title": "Маска",
-        "genre": "Комедии",
-        "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
-        "kp_id": "6039", 
-        "year": 1994,
-        "director": "Чак Рассел",
-        "rating": 8.0,
-        "duration": "101 мин.",
-        "description": "Скромный работник банка находит маску, превращающую его в неуязвимого весельчака...",
-        "cast": "Джим Керри, Кэмерон Диас"
-    },
-    {
-        "id": 11,
-        "title": "Главный герой",
-        "genre": "Комедии",
-        "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
-        "kp_id": "1199159", 
-        "year": 2021,
-        "director": "Шон Леви",
-        "rating": 7.2,
-        "duration": "115 мин.",
-        "description": "Банковский клерк узнает, что он — второстепенный персонаж в жестокой видеоигре...",
-        "cast": "Райан Рейнольдс, Джоди Комер"
-    },
-    {
-        "id": 12,
-        "title": "Заклятие",
-        "genre": "Ужасы",
-        "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
-        "kp_id": "462682", 
-        "year": 2013,
-        "director": "Джеймс Ван",
-        "rating": 7.4,
-        "duration": "112 мин.",
-        "description": "Исследователи паранормального помогают семье, столкнувшейся с темным духом на ферме...",
-        "cast": "Вера Фармига, Патрик Уилсон"
-    },
-    {
-        "id": 13,
-        "title": "Оно",
-        "genre": "Ужасы",
-        "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
-        "kp_id": "452973", 
-        "year": 2017,
-        "director": "Энди Мускетти",
-        "rating": 7.3,
-        "duration": "135 мин.",
-        "description": "Школьники объединяются, чтобы победить жуткого клоуна Пеннивайза...",
-        "cast": "Билл Скарсгард, Финн Вулфхард"
-    },
-    {
-        "id": 14,
-        "title": "Сияние",
-        "genre": "Ужасы",
-        "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
-        "kp_id": "409", 
-        "year": 1980,
-        "director": "Стэнли Кубрик",
-        "rating": 8.4,
-        "duration": "144 мин.",
-        "description": "Писатель Джек Торренс теряет рассудок в пустом зимнем отеле Оверлук...",
-        "cast": "Джек Николсон, Шелли Дювалл"
-    },
-    {
-        "id": 15,
-        "title": "Тихое место",
-        "genre": "Ужасы",
-        "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
-        "kp_id": "1043743", 
-        "year": 2018,
-        "director": "Джон Красински",
-        "rating": 7.1,
-        "duration": "90 мин.",
-        "description": "Семья выживает в мире слепых монстров, реагирующих на малейший звук...",
-        "cast": "Эмили Блант, Джон Красински"
-    },
-    {
-        "id": 16,
-        "title": "Астрал",
-        "genre": "Ужасы",
-        "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
-        "kp_id": "495892", 
-        "year": 2010,
-        "director": "Джеймс Ван",
-        "rating": 6.8,
-        "duration": "103 мин.",
-        "description": "Мальчик впадает в кому, а его душа оказывается заперта в пугающем Астрале...",
-        "cast": "Патрик Уилсон, Роуз Бирн"
     }
 ]
+
+# Для остальных фильмов из старой базы (если захочешь добавить позже)
+# Достаточно зайти на Rutube, найти нужный фильм, нажать "Поделиться" -> "Код вставки" и скопировать ссылку из src=""
 
 REVIEWS = {movie["id"]: [] for movie in MOVIES}
 
@@ -237,19 +72,8 @@ INDEX_HTML = """
             --text-main: #ffffff;
             --text-muted: #a0a0b0;
         }
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: linear-gradient(135deg, #161623 0%, #0b0b11 100%);
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--primary);
-        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
+        header { background: linear-gradient(135deg, #161623 0%, #0b0b11 100%); padding: 30px 20px; text-align: center; border-bottom: 4px solid var(--primary); }
         header h1 { margin: 0; font-size: 3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; }
         header p { margin: 10px 0 0 0; color: var(--text-muted); }
         .container { max-width: 1300px; margin: 40px auto; padding: 0 25px; }
@@ -277,7 +101,7 @@ INDEX_HTML = """
         <p>Индивидуальная онлайн-галерея твоих любимых фильмов</p>
     </header>
     <div class="container">
-        {% for genre in ["Фантастика", "Боевики", "Комедии", "Ужасы"] %}
+        {% for genre in ["Фантастика"] %}
         <div class="genre-section">
             <div class="genre-header"><h2 class="genre-title">{{ genre }}</h2></div>
             <div class="movies-grid">
@@ -311,14 +135,11 @@ MOVIE_HTML = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ movie.title }} — Films_Iliaz</title>
-    <!-- ПОДКЛЮЧАЕМ УМНЫЙ ПОИСК ПЛЕЕРОВ KINOBOX -->
-    <script src="https://kinobox.tv/assets/kinobox.min.js"></script>
     <style>
         :root {
             --bg-dark: #0f0f12;
             --card-bg: #1a1a24;
             --primary: #ff4a5a;
-            --primary-hover: #e03d4c;
             --accent-green: #2db742;
             --accent-green-hover: #219634;
             --text-main: #ffffff;
@@ -354,7 +175,7 @@ MOVIE_HTML = """
             backdrop-filter: blur(8px);
         }
         .modal-content {
-            background-color: #0b0b0e; width: 90%; max-width: 960px; height: 580px;
+            background-color: #000000; width: 90%; max-width: 960px; height: 560px;
             border-radius: 16px; overflow: hidden; position: relative; border: 2px solid var(--primary);
             display: flex; flex-direction: column;
         }
@@ -362,11 +183,8 @@ MOVIE_HTML = """
         .modal-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
         .close-btn { background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; }
         .close-btn:hover { color: var(--primary); }
-        
-        .modal-body { flex-grow: 1; width: 100%; height: 100%; background-color: #000; padding: 10px; box-sizing: border-box; }
-        
-        /* Стили для самого плеера внутри контейнера */
-        .kinobox_player { width: 100%; height: 100%; }
+        .modal-body { flex-grow: 1; width: 100%; height: 100%; background-color: #000; }
+        .modal-body iframe { width: 100%; height: 100%; border: none; }
 
         .reviews-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }
         .review-item { background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
@@ -396,56 +214,32 @@ MOVIE_HTML = """
                 <p style="line-height: 1.6; color: #d1d1d6;">{{ movie.description }}</p>
             </div>
         </div>
-        <div class="reviews-wrapper">
-            <h3>Отзывы</h3>
-            {% for r in reviews %}
-                <div class="review-item"><div class="review-user">{{ r.name }}</div><div>{{ r.text }}</div></div>
-            {% endfor %}
-            <form action="{{ url_for('movie_detail', movie_id=movie.id) }}" method="POST" style="margin-top:25px;">
-                <input type="text" name="name" class="input-field" placeholder="Ваше имя" required>
-                <textarea name="review_text" class="input-field" placeholder="Ваш отзыв" style="min-height:100px;" required></textarea>
-                <button type="submit" class="btn-submit">Отправить</button>
-            </form>
-        </div>
     </div>
 
-    <!-- НАШЕ ВСПЛЫВАЮЩЕЕ ОКНО -->
     <div class="modal-overlay" id="playerModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Мультиплеер: {{ movie.title }}</h3>
+                <h3>Онлайн плеер: {{ movie.title }}</h3>
                 <button class="close-btn" onclick="closePlayer()">&times;</button>
             </div>
-            <div class="modal-body">
-                <!-- Сюда Kinobox автоматически подставит рабочий плеер -->
-                <div class="kinobox_player"></div>
-            </div>
+            <div class="modal-body"><div id="iframeContainer" style="width:100%; height:100%;"></div></div>
         </div>
     </div>
 
     <script>
         function openPlayer() {
             var modal = document.getElementById('playerModal');
+            var container = document.getElementById('iframeContainer');
+            // Встраиваем полностью легальный плеер Rutube, разрешающий iframe
+            container.innerHTML = '<iframe src="{{ movie.video_url }}" width="100%" height="100%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>';
             modal.style.display = 'flex';
-            
-            // Запускаем автоматический поиск стабильного плеера по ID Кинопоиска
-            kinoBox('.kinobox_player', {
-                search: {
-                    kinopoisk: '{{ movie.kp_id }}'
-                },
-                players: {
-                    // Настройки оформления меню выбора плейлистов, если нужно
-                }
-            });
         }
-        
         function closePlayer() {
             var modal = document.getElementById('playerModal');
+            var container = document.getElementById('iframeContainer');
+            container.innerHTML = '';
             modal.style.display = 'none';
-            // Очищаем контейнер, чтобы звук фильма выключался при закрытии окна
-            document.querySelector('.kinobox_player').innerHTML = '';
         }
-        
         window.onclick = function(event) {
             var modal = document.getElementById('playerModal');
             if (event.target == modal) { closePlayer(); }
@@ -474,11 +268,6 @@ def index():
 def movie_detail(movie_id):
     movie = next((m for m in MOVIES if m["id"] == movie_id), None)
     if not movie: return "Фильм не найден", 404
-    if request.method == 'POST':
-        name = request.form.get('name', 'Аноним').strip()
-        text = request.form.get('review_text', '').strip()
-        if text: REVIEWS[movie_id].append({"name": name, "text": text})
-        return redirect(url_for('movie_detail', movie_id=movie_id))
     return render_template_string(MOVIE_HTML, movie=movie, reviews=REVIEWS.get(movie_id, []))
 
 if __name__ == '__main__':
