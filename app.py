@@ -5,219 +5,218 @@ from flask import Flask, render_template_string, request, redirect, url_for, Res
 
 app = Flask(__name__)
 
-# Полная конфигурация приложения
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- БАЗА ДАННЫХ ФИЛЬМОВ С ССЫЛКАМИ НА СТРАНИЦЫ КИНОГО ---
+# --- БАЗА ДАННЫХ С ПРЯМЫМИ ПЛЕЕРАМИ ДЛЯ КАЖДОГО ФИЛЬМА ---
 MOVIES = [
     {
         "id": 1,
         "title": "Аватар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
-        "video_url": "https://kinogo.my/3482-avatar-2009.html",
+        "video_url": "https://api.alloha.tv/?kp=251733", # Плеер Аватар
         "year": 2009,
         "director": "Джеймс Кэмерон",
         "rating": 7.9,
         "duration": "162 мин.",
-        "description": "Бывший морской пехотинец Джейк Салли, прикованный к инвалидному креслу, получает задание отправиться на далекую планету Пандора...",
-        "cast": "Сэм Уортингтон, Зои Салдана, Сигурни Уивер, Стивен Лэнг"
+        "description": "Бывший морской пехотинец Джейк Салли, прикованный к инвалидному чеслу, отправляется на Пандору...",
+        "cast": "Сэм Уортингтон, Зои Салдана"
     },
     {
         "id": 2,
         "title": "Властелин колец: Братство Кольца",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
-        "video_url": "https://kinogo.my/16016-vlastelin-kolec-bratstvo-kolca-2001.html",
+        "video_url": "https://api.alloha.tv/?kp=348", # Плеер Властелин колец
         "year": 2001,
         "director": "Питер Джексон",
         "rating": 8.6,
         "duration": "178 мин.",
-        "description": "В спокойной деревушке Хоббитон молодой хоббит Фродо Бэггинс получает в наследство от своего дяди Бильбо магическое Кольцо Всевластья...",
-        "cast": "Элайджа Вуд, Иэн Маккеллен, Вигго Мортенсен, Шон Бин, Орландо Блум"
+        "description": "В спокойной деревушке Хоббитон молодой хоббит Фродо Бэггинс получает Кольцо Всевластья...",
+        "cast": "Элайджа Вуд, Иэн Маккеллен"
     },
     {
         "id": 3,
         "title": "Гарри Поттер и Философский камень",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
-        "video_url": "https://kinogo.my/15852-garri-potter-i-filosofskiy-kamen-2001.html",
+        "video_url": "https://api.alloha.tv/?kp=689", # Плеер Гарри Поттер
         "year": 2001,
         "director": "Крис Коламбус",
         "rating": 8.2,
         "duration": "152 мин.",
-        "description": "Гарри Поттер — обычный сирота, живущий под лестницей в доме своих жестоких родственников Дурслей...",
-        "cast": "Дэниэл Рэдклифф, Руперт Гринт, Эмма Уотсон, Ричард Харрис"
+        "description": "Гарри Поттер — обычный сирота, узнающий в 11 лет, что он волшебник...",
+        "cast": "Дэниэл Рэдклифф, Эмма Уотсон"
     },
     {
         "id": 4,
         "title": "Интерстеллар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
-        "video_url": "https://kinogo.my/2135-interstellar-2014-v5.html",
+        "video_url": "https://api.alloha.tv/?kp=258687", # Плеер Интерстеллар
         "year": 2014,
         "director": "Кристофер Нолан",
         "rating": 8.6,
         "duration": "169 мин.",
-        "description": "В недалеком будущем человечество сталкивается с глобальным продовольственным кризисом...",
-        "cast": "Мэттью Макконахи, Энн Хэтэуэй, Джессика Честейн, Майкл Кейн"
+        "description": "Группа исследователей использует пространственно-временной тоннель для спасения человечества...",
+        "cast": "Мэттью Макконахи, Энн Хэтэуэй"
     },
     {
         "id": 5,
         "title": "Матрица",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
-        "video_url": "https://kinogo.my/18844-matrica-1999.html",
+        "video_url": "https://api.alloha.tv/?kp=301", # Плеер Матрица
         "year": 1999,
-        "director": "Лана Вачовски, Лилли Вачовски",
+        "director": "Лана Вачовски",
         "rating": 8.5,
         "duration": "136 мин.",
-        "description": "Жизнь Томаса Андерсона разделена на две части: днем он обычный программист, а ночью — хакер Нео...",
-        "cast": "Киану Ривз, Лоренс Фишбёрн, Кэрри-Энн Мосс, Хьюго Уивинг"
+        "description": "Жизнь Томаса Андерсона разделена на две части: днем он программист, ночью — хакер Нео...",
+        "cast": "Киану Ривз, Лоренс Фишбёрн"
     },
     {
         "id": 6,
         "title": "Начало",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
-        "video_url": "https://kinogo.my/2138-nachalo-2010.html",
+        "video_url": "https://api.alloha.tv/?kp=447301", # Плеер Начало
         "year": 2010,
         "director": "Кристофер Нолан",
         "rating": 8.7,
         "duration": "148 мин.",
-        "description": "Доминик Кобб — непревзойденный специалист по извлечению ценных секретов из глубин подсознания...",
-        "cast": "Леонардо Ди Каприо, Джозеф Гордон-Левитт, Эллиот Пейдж, Том Харди, Киллиан Мёрфи"
+        "description": "Кобб — мастер кражи секретов из глубин подсознания во время сна...",
+        "cast": "Леонардо Ди Каприо, Том Харди"
     },
     {
         "id": 7,
         "title": "Темный рыцарь",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
-        "video_url": "https://kinogo.my/19875-temnyy-rycar-2008.html",
+        "video_url": "https://api.alloha.tv/?kp=111543", # Плеер Темный рыцарь
         "year": 2008,
         "director": "Кристофер Нолан",
         "rating": 8.5,
         "duration": "152 мин.",
-        "description": "Бэтмен поднимает ставки в бесконечной войне с организованной преступностью Готэма...",
-        "cast": "Кристиан Бейл, Хит Леджер, Аарон Экхарт, Гэри Олдмен"
+        "description": "Бэтмен поднимает ставки в войне с криминалом, сталкиваясь с безумным Джокером...",
+        "cast": "Кристиан Бейл, Хит Леджер"
     },
     {
         "id": 8,
         "title": "Гладиатор",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
-        "video_url": "https://kinogo.my/17799-gladiator-2000.html",
+        "video_url": "https://api.alloha.tv/?kp=474", # Плеер Гладиатор
         "year": 2000,
         "director": "Ридли Скотт",
         "rating": 8.6,
-        "duration": "155 min.",
-        "description": "Генерал Максимус — величайший военачальник Римской империи, преданный своему правителю...",
-        "cast": "Рассел Кроу, Хоакин Феникс, Конни Нильсен, Оливер Рид"
+        "duration": "155 мин.",
+        "description": "Преданный генерал Максимус становится гладиатором, чтобы отомстить убийце своей семьи...",
+        "cast": "Рассел Кроу, Хоакин Феникс"
     },
     {
         "id": 9,
         "title": "Мальчишник в Вегасе",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
-        "video_url": "https://kinogo.my/2242-malchishnik-v-vegase-2009.html",
+        "video_url": "https://api.alloha.tv/?kp=408410", # Плеер Мальчишник
         "year": 2009,
         "director": "Тодд Филлипс",
         "rating": 7.9,
         "duration": "100 мин.",
-        "description": "Трое закадычных друзей отправляются в Лас-Вегас на грандиозный мальчишник своего приятеля...",
-        "cast": "Брэдли Купер, Эд Хелмс, Зак Галифианакис, Джастин Барта"
+        "description": "Трое друзей просыпаются после мальчишника в Вегасе и понимают, что жених исчез...",
+        "cast": "Брэдли Cooper, Зак Галифианакис"
     },
     {
         "id": 10,
         "title": "Маска",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
-        "video_url": "https://kinogo.my/1932-maska-1994.html",
+        "video_url": "https://api.alloha.tv/?kp=6039", # Плеер Маска
         "year": 1994,
         "director": "Чак Рассел",
         "rating": 8.0,
         "duration": "101 мин.",
-        "description": "Скромный, застенчивый и неудачливый работник банка Стэнли Ипкисс случайно находит старинную маску...",
-        "cast": "Джим Керри, Кэмерон Диас, Питер Ригерт, Питер Грин"
+        "description": "Скромный работник банка находит маску, превращающую его в неуязвимого весельчака...",
+        "cast": "Джим Керри, Кэмерон Диас"
     },
     {
         "id": 11,
         "title": "Главный герой",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
-        "video_url": "https://kinogo.my/27357-free-guy-2021.html",
+        "video_url": "https://api.alloha.tv/?kp=1199159", # Плеер Главный герой
         "year": 2021,
         "director": "Шон Леви",
         "rating": 7.2,
         "duration": "115 мин.",
-        "description": "У сотрудника крупного банка по имени Парень вся жизнь отточена до мелочей...",
-        "cast": "Райан Рейнольдс, Джоди Комер, Лил Rel Ховери, Тайка Вайтити"
+        "description": "Банковский клерк узнает, что он — второстепенный персонаж в жестокой видеоигре...",
+        "cast": "Райан Рейнольдс, Джоди Комер"
     },
     {
         "id": 12,
         "title": "Заклятие",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
-        "video_url": "https://kinogo.my/19717-zaklyatie-2013.html",
+        "video_url": "https://api.alloha.tv/?kp=462682", # Плеер Заклятие
         "year": 2013,
         "director": "Джеймс Ван",
         "rating": 7.4,
         "duration": "112 мин.",
-        "description": "Семья Перрон переезжает в уединенный фермерский дом и сразу начинает сталкиваться со странными звуками...",
-        "cast": "Вера Фармига, Патрик Уилсон, Рон Ливингстон, Лили Тейлор"
+        "description": "Исследователи паранормального помогают семье, столкнувшейся с темным духом на ферме...",
+        "cast": "Вера Фармига, Патрик Уилсон"
     },
     {
         "id": 13,
         "title": "Оно",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
-        "video_url": "https://kinogo.my/16999-ono-2017.html",
+        "video_url": "https://api.alloha.tv/?kp=452973", # Плеер Оно
         "year": 2017,
         "director": "Энди Мускетти",
         "rating": 7.3,
         "duration": "135 мин.",
-        "description": "В тихом провинциальном городке Дерри в штате Мэн начинают бесследно исчезать дети...",
-        "cast": "Джейден Мартелл, Билл Скарсгард, Финн Вулфхард, София Лиллис"
+        "description": "Школьники объединяются, чтобы победить жуткого клоуна Пеннивайза...",
+        "cast": "Билл Скарсгард, Финн Вулфхард"
     },
     {
         "id": 14,
         "title": "Сияние",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
-        "video_url": "https://kinogo.my/17397-siyanie-1980.html",
+        "video_url": "https://api.alloha.tv/?kp=409", # Плеер Сияние
         "year": 1980,
         "director": "Стэнли Кубрик",
         "rating": 8.4,
         "duration": "144 мин.",
-        "description": "Писатель Джек Торренс устраивается зимним смотрителем в шикарный отель «Оверлук»...",
-        "cast": "Джек Николсон, Шелли Дювалл, Дэнни Ллойд, Скэтмэн Крозерс"
+        "description": "Писатель Джек Торренс теряет рассудок в пустом зимнем отеле Оверлук...",
+        "cast": "Джек Николсон, Шелли Дювалл"
     },
     {
         "id": 15,
         "title": "Тихое место",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
-        "video_url": "https://kinogo.my/17697-tihoe-mesto-2018.html",
+        "video_url": "https://api.alloha.tv/?kp=1043743", # Плеер Тихое место
         "year": 2018,
         "director": "Джон Красински",
         "rating": 7.1,
         "duration": "90 мин.",
-        "description": "Земля подверглась нападению смертоносных инопланетных существ, реагирующих на любой звук...",
-        "cast": "Emily Blunt, John Krasinski, Millicent Simmonds, Noah Jupe"
+        "description": "Семья выживает в мире слепых монстров, реагирующих на малейший звук...",
+        "cast": "Эмили Блант, Джон Красински"
     },
     {
         "id": 16,
         "title": "Астрал",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
-        "video_url": "https://kinogo.my/19227-astral-2010.html",
+        "video_url": "https://api.alloha.tv/?kp=495892", # Плеер Астрал
         "year": 2010,
         "director": "Джеймс Ван",
         "rating": 6.8,
         "duration": "103 мин.",
-        "description": "Молодые супруги Джош и Рене переезжают со своими детьми в новый дом, где начинают происходить странные вещи...",
-        "cast": "Патрик Уилсон, Роуз Бирн, Тай Симпкинс, Лин Шэй"
+        "description": "Мальчик впадает в кому, а его душа оказывается заперта в пугающем Астрале...",
+        "cast": "Патрик Уилсон, Роуз Бирн"
     }
 ]
 
@@ -235,12 +234,11 @@ INDEX_HTML = """
             --bg-dark: #0f0f12;
             --card-bg: #1a1a24;
             --primary: #ff4a5a;
-            --primary-hover: #e03d4c;
             --text-main: #ffffff;
             --text-muted: #a0a0b0;
         }
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
@@ -252,112 +250,36 @@ INDEX_HTML = """
             text-align: center;
             border-bottom: 4px solid var(--primary);
         }
-        header h1 {
-            margin: 0;
-            font-size: 3rem;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-        }
-        header p {
-            margin: 10px 0 0 0;
-            color: var(--text-muted);
-        }
-        .container {
-            max-width: 1300px;
-            margin: 40px auto;
-            padding: 0 25px;
-        }
-        .genre-section {
-            margin-bottom: 60px;
-        }
-        .genre-header {
-            border-bottom: 2px solid #252535;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-        .genre-title {
-            font-size: 2rem;
-            margin: 0;
-        }
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 35px;
-        }
+        header h1 { margin: 0; font-size: 3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; }
+        header p { margin: 10px 0 0 0; color: var(--text-muted); }
+        .container { max-width: 1300px; margin: 40px auto; padding: 0 25px; }
+        .genre-section { margin-bottom: 60px; }
+        .genre-header { border-bottom: 2px solid #252535; padding-bottom: 10px; margin-bottom: 30px; }
+        .genre-title { font-size: 2rem; margin: 0; }
+        .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 35px; }
         .movie-card {
-            background-color: var(--card-bg);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #222232;
-            transition: transform 0.3s;
+            background-color: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+            text-decoration: none; color: inherit; display: flex; flex-direction: column; border: 1px solid #222232; transition: transform 0.3s;
         }
-        .movie-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-        }
-        .poster-wrapper {
-            width: 100%;
-            height: 350px;
-            position: relative;
-        }
-        .poster-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .rating-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background-color: rgba(0, 0, 0, 0.85);
-            color: #ffc107;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        .movie-content {
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .movie-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin: 0 0 8px 0;
-        }
-        .movie-meta {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            background-color: #0b0b0e;
-        }
+        .movie-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .poster-wrapper { width: 100%; height: 350px; position: relative; }
+        .poster-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .rating-badge { position: absolute; top: 15px; right: 15px; background-color: rgba(0, 0, 0, 0.85); color: #ffc107; padding: 5px 10px; border-radius: 6px; font-weight: bold; }
+        .movie-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .movie-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0; }
+        .movie-meta { font-size: 0.9rem; color: var(--text-muted); }
+        footer { text-align: center; padding: 40px 20px; color: var(--text-muted); background-color: #0b0b0e; }
     </style>
 </head>
 <body>
-
     <header>
         <h1>Films_Iliaz</h1>
         <p>Индивидуальная онлайн-галерея твоих любимых фильмов</p>
     </header>
-
     <div class="container">
         {% for genre in ["Фантастика", "Боевики", "Комедии", "Ужасы"] %}
         <div class="genre-section">
-            <div class="genre-header">
-                <h2 class="genre-title">{{ genre }}</h2>
-            </div>
+            <div class="genre-header"><h2 class="genre-title">{{ genre }}</h2></div>
             <div class="movies-grid">
                 {% for movie in movies if movie.genre == genre %}
                 <a href="{{ url_for('movie_detail', movie_id=movie.id) }}" class="movie-card">
@@ -377,11 +299,7 @@ INDEX_HTML = """
         </div>
         {% endfor %}
     </div>
-
-    <footer>
-        &copy; 2026 Films_Iliaz. Все права защищены.
-    </footer>
-
+    <footer>&copy; 2026 Films_Iliaz. Все права защищены.</footer>
 </body>
 </html>
 """
@@ -404,39 +322,17 @@ MOVIE_HTML = """
             --text-main: #ffffff;
             --text-muted: #a0a0b0;
         }
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #161623;
-            padding: 20px 40px;
-            border-bottom: 3px solid var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
+        header { background-color: #161623; padding: 20px 40px; border-bottom: 3px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 2rem; color: var(--primary); }
-        .back-btn {
-            color: white; text-decoration: none; font-weight: 600;
-            background-color: #2b2b3d; padding: 10px 20px; border-radius: 8px;
-        }
+        .back-btn { color: white; text-decoration: none; font-weight: 600; background-color: #2b2b3d; padding: 10px 20px; border-radius: 8px; }
         .container { max-width: 1100px; margin: 50px auto; padding: 0 25px; }
-        
-        .movie-main-box {
-            display: flex; gap: 50px; background-color: var(--card-bg);
-            padding: 40px; border-radius: 16px; border: 1px solid #222232;
-        }
+        .movie-main-box { display: flex; gap: 50px; background-color: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid #222232; }
         .poster-box { width: 320px; height: 470px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
         .poster-box img { width: 100%; height: 100%; object-fit: cover; }
-        
         .info-box { flex-grow: 1; }
         .info-box h2 { margin: 0 0 15px 0; font-size: 2.8rem; }
         
-        /* КНОПКА СМОТРЕТЬ ФИЛЬМ */
         .watch-btn {
             display: inline-block; background-color: var(--accent-green); color: white;
             padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
@@ -449,56 +345,42 @@ MOVIE_HTML = """
         .meta-table td { padding: 10px 0; border-bottom: 1px solid #28283a; }
         .meta-table td.label { color: var(--text-muted); width: 140px; }
         
-        /* СТИЛИ ДЛЯ ВСПЛЫВАЮЩЕГО ОКНА (МОДАЛКИ) */
+        /* МОДАЛЬНОЕ ОКНО */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.85); z-index: 1000; justify-content: center; align-items: center;
+            background-color: rgba(0, 0, 0, 0.9); z-index: 1000; justify-content: center; align-items: center;
             backdrop-filter: blur(8px);
         }
         .modal-content {
-            background-color: #111116; width: 90%; max-width: 960px; height: 600px;
+            background-color: #000000; width: 90%; max-width: 960px; height: 550px;
             border-radius: 16px; overflow: hidden; position: relative; border: 2px solid var(--primary);
-            display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(255,74,90,0.4);
+            display: flex; flex-direction: column;
         }
-        .modal-header {
-            background-color: #161623; padding: 15px 25px; display: flex;
-            justify-content: space-between; align-items: center; border-bottom: 1px solid #252535;
-        }
+        .modal-header { background-color: #161623; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
-        .close-btn {
-            background: none; border: none; color: var(--text-muted); font-size: 2rem;
-            cursor: pointer; line-height: 1; transition: color 0.2s;
-        }
+        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; }
         .close-btn:hover { color: var(--primary); }
-        .modal-body { flex-grow: 1; width: 100%; height: 100%; }
+        .modal-body { flex-grow: 1; width: 100%; height: 100%; background-color: #000; }
         .modal-body iframe { width: 100%; height: 100%; border: none; }
 
-        /* Отзывы */
         .reviews-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }
         .review-item { background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
-        .review-user { font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        .review-user { font-weight: bold; color: var(--primary); }
         .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3a3a52; background-color: #121218; color: white; margin-bottom: 15px; box-sizing: border-box;}
-        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <header>
         <h1>Films_Iliaz</h1>
         <a href="{{ url_for('index') }}" class="back-btn">← На главную</a>
     </header>
-
     <div class="container">
         <div class="movie-main-box">
-            <div class="poster-box">
-                <img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}">
-            </div>
+            <div class="poster-box"><img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}"></div>
             <div class="info-box">
                 <h2>{{ movie.title }} ({{ movie.year }})</h2>
-                
-                <!-- ЗЕЛЕНАЯ КНОПКА СМОТРЕТЬ -->
                 <button class="watch-btn" onclick="openPlayer()">Смотреть фильм</button>
-
                 <table class="meta-table">
                     <tr><td class="label">Жанр</td><td>{{ movie.genre }}</td></tr>
                     <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{ movie.rating }}</td></tr>
@@ -509,15 +391,10 @@ MOVIE_HTML = """
                 <p style="line-height: 1.6; color: #d1d1d6;">{{ movie.description }}</p>
             </div>
         </div>
-
-        <!-- ОТЗЫВЫ -->
         <div class="reviews-wrapper">
             <h3>Отзывы</h3>
             {% for r in reviews %}
-                <div class="review-item">
-                    <div class="review-user">{{ r.name }}</div>
-                    <div>{{ r.text }}</div>
-                </div>
+                <div class="review-item"><div class="review-user">{{ r.name }}</div><div>{{ r.text }}</div></div>
             {% endfor %}
             <form action="{{ url_for('movie_detail', movie_id=movie.id) }}" method="POST" style="margin-top:25px;">
                 <input type="text" name="name" class="input-field" placeholder="Ваше имя" required>
@@ -527,50 +404,35 @@ MOVIE_HTML = """
         </div>
     </div>
 
-    <!-- ВСПЛЫВАЮЩЕЕ ОКНО (МОДАЛКА С ПЛЕЕРОМ КИНОГО) -->
     <div class="modal-overlay" id="playerModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Просмотр: {{ movie.title }}</h3>
                 <button class="close-btn" onclick="closePlayer()">&times;</button>
             </div>
-            <div class="modal-body">
-                <!-- Сюда при клике вставится iframe с нужным фильмом -->
-                <div id="iframeContainer" style="width:100%; height:100%;"></div>
-            </div>
+            <div class="modal-body"><div id="iframeContainer" style="width:100%; height:100%;"></div></div>
         </div>
     </div>
 
-    <!-- СКРИПТ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ОКНА -->
     <script>
         function openPlayer() {
             var modal = document.getElementById('playerModal');
             var container = document.getElementById('iframeContainer');
-            
-            // Вставляем фрейм сайта Киного именно для ТЕКУЩЕГО фильма
-            container.innerHTML = '<iframe src="{{ movie.video_url }}" allowfullscreen></iframe>';
-            
+            // Встраиваем стабильный плеер, который никуда не перенаправляет
+            container.innerHTML = '<iframe src="{{ movie.video_url }}" allowfullscreen scrolling="no"></iframe>';
             modal.style.display = 'flex';
         }
-
         function closePlayer() {
             var modal = document.getElementById('playerModal');
             var container = document.getElementById('iframeContainer');
-            
-            // Очищаем контейнер, чтобы видео перестало играть на фоне после закрытия
             container.innerHTML = '';
             modal.style.display = 'none';
         }
-
-        // Закрытие окна при клике на темную область вокруг
         window.onclick = function(event) {
             var modal = document.getElementById('playerModal');
-            if (event.target == modal) {
-                closePlayer();
-            }
+            if (event.target == modal) { closePlayer(); }
         }
     </script>
-
 </body>
 </html>
 """
@@ -594,13 +456,11 @@ def index():
 def movie_detail(movie_id):
     movie = next((m for m in MOVIES if m["id"] == movie_id), None)
     if not movie: return "Фильм не найден", 404
-
     if request.method == 'POST':
         name = request.form.get('name', 'Аноним').strip()
         text = request.form.get('review_text', '').strip()
         if text: REVIEWS[movie_id].append({"name": name, "text": text})
         return redirect(url_for('movie_detail', movie_id=movie_id))
-
     return render_template_string(MOVIE_HTML, movie=movie, reviews=REVIEWS.get(movie_id, []))
 
 if __name__ == '__main__':
