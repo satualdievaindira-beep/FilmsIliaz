@@ -8,14 +8,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- ПОЛНАЯ БАЗА ДАННЫХ ИЗ 16 ФИЛЬМОВ С ПРЯМЫМИ ССЫЛКАМИ НА СТАБИЛЬНЫЙ ПРОСМОТР ---
+# --- ПОЛНАЯ БАЗА ДАННЫХ ИЗ 16 ФИЛЬМОВ С ПРЯМЫМИ ССЫЛКАМИ НА КИНОПОИСК ---
 MOVIES = [
     {
         "id": 1,
         "title": "Аватар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
-        "video_url": "https://rutube.ru/search/?query=Аватар%202009", 
+        "video_url": "https://www.kinopoisk.ru/film/251733/", 
         "year": 2009,
         "director": "Джеймс Кэмерон",
         "rating": 7.9,
@@ -28,7 +28,7 @@ MOVIES = [
         "title": "Властелин колец: Братство Кольца",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
-        "video_url": "https://rutube.ru/search/?query=Властелин%20колец%20Братство%20Кольца", 
+        "video_url": "https://www.kinopoisk.ru/film/348/", 
         "year": 2001,
         "director": "Питер Джексон",
         "rating": 8.6,
@@ -41,7 +41,7 @@ MOVIES = [
         "title": "Гарри Поттер и Философский камень",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
-        "video_url": "https://rutube.ru/search/?query=Гарри%20Поттер%20и%20Философский%20камень", 
+        "video_url": "https://www.kinopoisk.ru/film/689/", 
         "year": 2001,
         "director": "Крис Коламбус",
         "rating": 8.2,
@@ -54,7 +54,7 @@ MOVIES = [
         "title": "Интерстеллар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
-        "video_url": "https://rutube.ru/search/?query=Интерстеллар%202014", 
+        "video_url": "https://www.kinopoisk.ru/film/258687/", 
         "year": 2014,
         "director": "Кристофер Нолан",
         "rating": 8.6,
@@ -67,7 +67,7 @@ MOVIES = [
         "title": "Матрица",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
-        "video_url": "https://rutube.ru/search/?query=Матрица%201999", 
+        "video_url": "https://www.kinopoisk.ru/film/301/", 
         "year": 1999,
         "director": "Лана Вачовски",
         "rating": 8.5,
@@ -80,7 +80,7 @@ MOVIES = [
         "title": "Начало",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
-        "video_url": "https://rutube.ru/search/?query=Начало%202010%20фильм", 
+        "video_url": "https://www.kinopoisk.ru/film/447301/", 
         "year": 2010,
         "director": "Кристофер Нолан",
         "rating": 8.7,
@@ -93,7 +93,7 @@ MOVIES = [
         "title": "Темный рыцарь",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
-        "video_url": "https://rutube.ru/search/?query=Темный%20рыцарь%202008", 
+        "video_url": "https://www.kinopoisk.ru/film/111543/", 
         "year": 2008,
         "director": "Кристофер Нолан",
         "rating": 8.5,
@@ -106,7 +106,7 @@ MOVIES = [
         "title": "Гладиатор",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
-        "video_url": "https://rutube.ru/search/?query=Гладиатор%202000%20фильм", 
+        "video_url": "https://www.kinopoisk.ru/film/474/", 
         "year": 2000,
         "director": "Ридли Скотт",
         "rating": 8.6,
@@ -119,7 +119,7 @@ MOVIES = [
         "title": "Мальчишник в Вегасе",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
-        "video_url": "https://rutube.ru/search/?query=Мальчишник%20в%20Вегасе", 
+        "video_url": "https://www.kinopoisk.ru/film/408410/", 
         "year": 2009,
         "director": "Тодд Филлипс",
         "rating": 7.9,
@@ -132,7 +132,7 @@ MOVIES = [
         "title": "Маска",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
-        "video_url": "https://rutube.ru/search/?query=Маска%20фильм%201994", 
+        "video_url": "https://www.kinopoisk.ru/film/6039/", 
         "year": 1994,
         "director": "Чак Рассел",
         "rating": 8.0,
@@ -145,7 +145,7 @@ MOVIES = [
         "title": "Главный герой",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
-        "video_url": "https://rutube.ru/search/?query=Главный%20герой%20фильм%202021", 
+        "video_url": "https://www.kinopoisk.ru/film/1199159/", 
         "year": 2021,
         "director": "Шон Леви",
         "rating": 7.2,
@@ -158,7 +158,7 @@ MOVIES = [
         "title": "Заклятие",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
-        "video_url": "https://rutube.ru/search/?query=Заклятие%20фильм%202013", 
+        "video_url": "https://www.kinopoisk.ru/film/462682/", 
         "year": 2013,
         "director": "Джеймс Ван",
         "rating": 7.4,
@@ -171,7 +171,7 @@ MOVIES = [
         "title": "Оно",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
-        "video_url": "https://rutube.ru/search/?query=Оно%20фильм%202017", 
+        "video_url": "https://www.kinopoisk.ru/film/452973/", 
         "year": 2017,
         "director": "Энди Мускетти",
         "rating": 7.3,
@@ -184,7 +184,7 @@ MOVIES = [
         "title": "Сияние",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
-        "video_url": "https://rutube.ru/search/?query=Сияние%20фильм%201980", 
+        "video_url": "https://www.kinopoisk.ru/film/409/", 
         "year": 1980,
         "director": "Стэнли Кубрик",
         "rating": 8.4,
@@ -197,7 +197,7 @@ MOVIES = [
         "title": "Тихое место",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
-        "video_url": "https://rutube.ru/search/?query=Тихое%20место%20фильм%202018", 
+        "video_url": "https://www.kinopoisk.ru/film/1043743/", 
         "year": 2018,
         "director": "Джон Красински",
         "rating": 7.1,
@@ -210,7 +210,7 @@ MOVIES = [
         "title": "Астрал",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
-        "video_url": "https://rutube.ru/search/?query=Астрал%20фильм%202010", 
+        "video_url": "https://www.kinopoisk.ru/film/495892/", 
         "year": 2010,
         "director": "Джеймс Ван",
         "rating": 6.8,
@@ -305,8 +305,8 @@ MOVIE_HTML = """
             --bg-dark: #0f0f12;
             --card-bg: #1a1a24;
             --primary: #ff4a5a;
-            --accent-green: #2db742;
-            --accent-green-hover: #219634;
+            --accent-green: #00c853;
+            --accent-green-hover: #00eedb;
             --text-main: #ffffff;
             --text-muted: #a0a0b0;
         }
@@ -322,13 +322,13 @@ MOVIE_HTML = """
         .info-box h2 { margin: 0 0 15px 0; font-size: 2.8rem; }
         
         .watch-link {
-            display: inline-block; background-color: var(--accent-green); color: white;
+            display: inline-block; background-color: var(--accent-green); color: black;
             padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
-            text-decoration: none; margin-bottom: 25px; transition: background 0.2s;
-            text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(45,183,66,0.3);
+            text-decoration: none; margin-bottom: 25px; transition: all 0.2s;
+            text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,200,83,0.3);
             text-align: center;
         }
-        .watch-link:hover { background-color: var(--accent-green-hover); }
+        .watch-link:hover { background-color: #00eedb; box-shadow: 0 4px 20px rgba(0,238,219,0.4); }
 
         .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .meta-table td { padding: 10px 0; border-bottom: 1px solid #28283a; }
@@ -351,8 +351,8 @@ MOVIE_HTML = """
             <div class="poster-box"><img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}"></div>
             <div class="info-box">
                 <h2>{{ movie.title }} ({{ movie.year }})</h2>
-                <!-- ПРЯМАЯ БЕЗОПАСНАЯ ССЫЛКА НА ПРОСМОТР В НОВОЙ ВКЛАДКЕ -->
-                <a href="{{ movie.video_url }}" target="_blank" class="watch-link">Смотреть фильм</a>
+                <!-- ПРЯМАЯ ССЫЛКА НА КИНОПОИСК -->
+                <a href="{{ movie.video_url }}" target="_blank" class="watch-link">Смотреть на Кинопоиске</a>
                 <table class="meta-table">
                     <tr><td class="label">Жанр</td><td>{{ movie.genre }}</td></tr>
                     <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{ movie.rating }}</td></tr>
