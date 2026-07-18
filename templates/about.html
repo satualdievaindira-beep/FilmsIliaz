@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О проекте | Films_Iliaz</title>
+    <style>
+
+body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #08080a; 
+    color: #ffffff; 
+    margin: 0; 
+    padding: 0; 
+    overflow-x: hidden;
+}
+nav { 
+    background-color: rgba(4, 4, 6, 0.85); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px 0; 
+    box-shadow: 0 4px 30px rgba(0,0,0,0.8); 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+nav a { 
+    color: #9ca3af; 
+    text-decoration: none; 
+    font-weight: 600; 
+    margin: 0 18px; 
+    font-size: 1.05rem; 
+    transition: all 0.3s ease; 
+}
+nav a:hover { 
+    color: #ff2e3b; 
+    text-shadow: 0 0 15px rgba(255, 46, 59, 0.5);
+}
+.logo { 
+    color: #ff2e3b !important; 
+    font-size: 1.6rem; 
+    text-transform: uppercase; 
+    letter-spacing: 3px; 
+    font-weight: 900;
+}
+.container { 
+    padding: 40px 20px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
+.accent { 
+    color: #ff2e3b; 
+    text-shadow: 0 0 15px rgba(255, 46, 59, 0.3);
+}
+h1 { 
+    font-size: 3rem; 
+    font-weight: 800;
+    margin-bottom: 20px; 
+}
+
+        .about-box { 
+            text-align: center; 
+            padding: 65px 35px; 
+            max-width: 750px; 
+            margin: 50px auto 0; 
+            background: #111114; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .about-box p { 
+            font-size: 1.25rem; 
+            color: #9ca3af; 
+            line-height: 1.75; 
+        }
+        .tech-list {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .tech-tag {
+            background: rgba(255, 46, 59, 0.1);
+            color: #ff2e3b;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 46, 59, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">Films_Iliaz</a>
+        <a href="/genre/action">Боевики</a>
+        <a href="/genre/comedy">Комедии</a>
+        <a href="/genre/fantasy">Фэнтези</a>
+        <a href="/about">О проекте</a>
+    </nav>
+    <div class="container">
+        <div class="about-box">
+            <h1>Киноплатформа <span class="accent">Films_Iliaz Premium</span></h1>
+            <p>Это технологичный, полностью интерактивный развлекательный веб-сервис. Проект построен на Flask (Python) для гибкой маршрутизации и чистого HTML5/CSS3/JS с применением асинхронного сохранения состояния на клиенте (Local Storage).</p>
+            <div class="tech-list">
+                <span class="tech-tag">Python & Flask</span>
+                <span class="tech-tag">Modal Theatre Player</span>
+                <span class="tech-tag">Dynamic Star Rating System</span>
+                <span class="tech-tag">Client State Engines</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

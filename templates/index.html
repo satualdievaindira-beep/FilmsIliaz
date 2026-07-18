@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная | Films_Iliaz</title>
+    <meta name="monetag" content="8a4bbe65dee28e911fefcd608f183f21">
+    <style>
+
+
+body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #08080a; 
+    color: #ffffff; 
+    margin: 0; 
+    padding: 0; 
+    overflow-x: hidden;
+}
+nav { 
+    background-color: rgba(4, 4, 6, 0.85); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px 0; 
+    box-shadow: 0 4px 30px rgba(0,0,0,0.8); 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+nav a { 
+    color: #9ca3af; 
+    text-decoration: none; 
+    font-weight: 600; 
+    margin: 0 18px; 
+    font-size: 1.05rem; 
+    transition: all 0.3s ease; 
+}
+nav a:hover { 
+    color: #ff2e3b; 
+    text-shadow: 0 0 15px rgba(255, 46, 59, 0.5);
+}
+.logo { 
+    color: #ff2e3b !important; 
+    font-size: 1.6rem; 
+    text-transform: uppercase; 
+    letter-spacing: 3px; 
+    font-weight: 900;
+}
+.container { 
+    padding: 40px 20px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
+.accent { 
+    color: #ff2e3b; 
+    text-shadow: 0 0 15px rgba(255, 46, 59, 0.3);
+}
+h1 { 
+    font-size: 3rem; 
+    font-weight: 800;
+    margin-bottom: 20px; 
+}
+
+        .hero { 
+            padding: 160px 20px; 
+            text-align: center; 
+            background: radial-gradient(circle at center, #1b1216 0%, #08080a 100%); 
+            min-height: 55vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero p { 
+            font-size: 1.35rem; 
+            color: #9ca3af; 
+            max-width: 650px; 
+            line-height: 1.7;
+            margin-top: 15px;
+        }
+        .browse-btn {
+            margin-top: 35px;
+            background-color: #ff2e3b;
+            color: white;
+            padding: 15px 32px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 50px;
+            font-size: 1.15rem;
+            box-shadow: 0 5px 20px rgba(255, 46, 59, 0.45);
+            transition: 0.3s;
+        }
+        .browse-btn:hover {
+            background-color: #e01b28;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 46, 59, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">Films_Iliaz</a>
+        <a href="/genre/action">Боевики</a>
+        <a href="/genre/comedy">Комедии</a>
+        <a href="/genre/fantasy">Фэнтези</a>
+        <a href="/about">О проекте</a>
+    </nav>
+    <div class="hero">
+        <h1>Добро пожаловать в <span class="accent">Films_Iliaz Premium</span></h1>
+        <p>Интерактивная медиа-лаборатория Ильяза. Читайте и оставляйте настоящие отзывы, смотрите трейлеры прямо в плеере и сохраняйте любимое кино!</p>
+        <a href="/genre/action" class="browse-btn">Войти в кинотеатр</a>
+    </div>
+</body>
+</html>
