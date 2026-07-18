@@ -8,19 +8,19 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- БАЗА ДАННЫХ С ПРЯМЫМИ ПЛЕЕРАМИ ДЛЯ КАЖДОГО ФИЛЬМА ---
+# --- БАЗА ДАННЫХ С ПРЯМЫМИ ССЫЛКАМИ НА СТРАНИЦЫ KINOGO.MY ---
 MOVIES = [
     {
         "id": 1,
         "title": "Аватар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
-        "video_url": "https://api.alloha.tv/?kp=251733", # Плеер Аватар
+        "video_url": "https://kinogo.my/2-avatar-2009.html", 
         "year": 2009,
         "director": "Джеймс Кэмерон",
         "rating": 7.9,
         "duration": "162 мин.",
-        "description": "Бывший морской пехотинец Джейк Салли, прикованный к инвалидному чеслу, отправляется на Пандору...",
+        "description": "Бывший морской пехотинец Джейк Салли, прикованный к инвалидному креслу, отправляется на Пандору...",
         "cast": "Сэм Уортингтон, Зои Салдана"
     },
     {
@@ -28,7 +28,7 @@ MOVIES = [
         "title": "Властелин колец: Братство Кольца",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
-        "video_url": "https://api.alloha.tv/?kp=348", # Плеер Властелин колец
+        "video_url": "https://kinogo.my/260-vlastelin-kolec-bratstvo-kolca-2001.html", 
         "year": 2001,
         "director": "Питер Джексон",
         "rating": 8.6,
@@ -41,7 +41,7 @@ MOVIES = [
         "title": "Гарри Поттер и Философский камень",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
-        "video_url": "https://api.alloha.tv/?kp=689", # Плеер Гарри Поттер
+        "video_url": "https://kinogo.my/757-garri-potter-i-filosofskiy-kamen-2001.html", 
         "year": 2001,
         "director": "Крис Коламбус",
         "rating": 8.2,
@@ -54,7 +54,7 @@ MOVIES = [
         "title": "Интерстеллар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
-        "video_url": "https://api.alloha.tv/?kp=258687", # Плеер Интерстеллар
+        "video_url": "https://kinogo.my/2107-interstellar-2014-smotret-onlayn.html", 
         "year": 2014,
         "director": "Кристофер Нолан",
         "rating": 8.6,
@@ -67,7 +67,7 @@ MOVIES = [
         "title": "Матрица",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
-        "video_url": "https://api.alloha.tv/?kp=301", # Плеер Матрица
+        "video_url": "https://kinogo.my/511-matrica-1999.html", 
         "year": 1999,
         "director": "Лана Вачовски",
         "rating": 8.5,
@@ -80,7 +80,7 @@ MOVIES = [
         "title": "Начало",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
-        "video_url": "https://api.alloha.tv/?kp=447301", # Плеер Начало
+        "video_url": "https://kinogo.my/790-nachalo-2010.html", 
         "year": 2010,
         "director": "Кристофер Нолан",
         "rating": 8.7,
@@ -93,7 +93,7 @@ MOVIES = [
         "title": "Темный рыцарь",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
-        "video_url": "https://api.alloha.tv/?kp=111543", # Плеер Темный рыцарь
+        "video_url": "https://kinogo.my/681-temnyy-rycar-2008.html", 
         "year": 2008,
         "director": "Кристофер Нолан",
         "rating": 8.5,
@@ -106,7 +106,7 @@ MOVIES = [
         "title": "Гладиатор",
         "genre": "Боевики",
         "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
-        "video_url": "https://api.alloha.tv/?kp=474", # Плеер Гладиатор
+        "video_url": "https://kinogo.my/481-gladiator-2000.html", 
         "year": 2000,
         "director": "Ридли Скотт",
         "rating": 8.6,
@@ -119,20 +119,20 @@ MOVIES = [
         "title": "Мальчишник в Вегасе",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
-        "video_url": "https://api.alloha.tv/?kp=408410", # Плеер Мальчишник
+        "video_url": "https://kinogo.my/1376-malchishnik-v-vegase-2009.html", 
         "year": 2009,
         "director": "Тодд Филлипс",
         "rating": 7.9,
         "duration": "100 мин.",
         "description": "Трое друзей просыпаются после мальчишника в Вегасе и понимают, что жених исчез...",
-        "cast": "Брэдли Cooper, Зак Галифианакис"
+        "cast": "Брэдли Купер, Зак Галифианакис"
     },
     {
         "id": 10,
         "title": "Маска",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
-        "video_url": "https://api.alloha.tv/?kp=6039", # Плеер Маска
+        "video_url": "https://kinogo.my/1802-maska-1994.html", 
         "year": 1994,
         "director": "Чак Рассел",
         "rating": 8.0,
@@ -145,7 +145,7 @@ MOVIES = [
         "title": "Главный герой",
         "genre": "Комедии",
         "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
-        "video_url": "https://api.alloha.tv/?kp=1199159", # Плеер Главный герой
+        "video_url": "https://kinogo.my/25520-glavnyy-geroy-2021.html", 
         "year": 2021,
         "director": "Шон Леви",
         "rating": 7.2,
@@ -158,7 +158,7 @@ MOVIES = [
         "title": "Заклятие",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
-        "video_url": "https://api.alloha.tv/?kp=462682", # Плеер Заклятие
+        "video_url": "https://kinogo.my/1020-zaklyatie-2013.html", 
         "year": 2013,
         "director": "Джеймс Ван",
         "rating": 7.4,
@@ -171,7 +171,7 @@ MOVIES = [
         "title": "Оно",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
-        "video_url": "https://api.alloha.tv/?kp=452973", # Плеер Оно
+        "video_url": "https://kinogo.my/6871-ono-2017.html", 
         "year": 2017,
         "director": "Энди Мускетти",
         "rating": 7.3,
@@ -184,20 +184,20 @@ MOVIES = [
         "title": "Сияние",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
-        "video_url": "https://api.alloha.tv/?kp=409", # Плеер Сияние
+        "video_url": "https://kinogo.my/3511-siyanie-1980.html", 
         "year": 1980,
         "director": "Стэнли Кубрик",
         "rating": 8.4,
         "duration": "144 мин.",
         "description": "Писатель Джек Торренс теряет рассудок в пустом зимнем отеле Оверлук...",
-        "cast": "Джек Николсон, Шелли Дювалл"
+        "cast": "Джек Никонсон, Шелли Дювалл"
     },
     {
         "id": 15,
         "title": "Тихое место",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
-        "video_url": "https://api.alloha.tv/?kp=1043743", # Плеер Тихое место
+        "video_url": "https://kinogo.my/7521-tihoe-mesto-2018.html", 
         "year": 2018,
         "director": "Джон Красински",
         "rating": 7.1,
@@ -210,7 +210,7 @@ MOVIES = [
         "title": "Астрал",
         "genre": "Ужасы",
         "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
-        "video_url": "https://api.alloha.tv/?kp=495892", # Плеер Астрал
+        "video_url": "https://kinogo.my/1511-astral-2010.html", 
         "year": 2010,
         "director": "Джеймс Ван",
         "rating": 6.8,
@@ -352,7 +352,7 @@ MOVIE_HTML = """
             backdrop-filter: blur(8px);
         }
         .modal-content {
-            background-color: #000000; width: 90%; max-width: 960px; height: 550px;
+            background-color: #000000; width: 90%; max-width: 1050px; height: 650px;
             border-radius: 16px; overflow: hidden; position: relative; border: 2px solid var(--primary);
             display: flex; flex-direction: column;
         }
@@ -407,7 +407,7 @@ MOVIE_HTML = """
     <div class="modal-overlay" id="playerModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Просмотр: {{ movie.title }}</h3>
+                <h3>Kinogo.my: {{ movie.title }}</h3>
                 <button class="close-btn" onclick="closePlayer()">&times;</button>
             </div>
             <div class="modal-body"><div id="iframeContainer" style="width:100%; height:100%;"></div></div>
@@ -418,8 +418,8 @@ MOVIE_HTML = """
         function openPlayer() {
             var modal = document.getElementById('playerModal');
             var container = document.getElementById('iframeContainer');
-            // Встраиваем стабильный плеер, который никуда не перенаправляет
-            container.innerHTML = '<iframe src="{{ movie.video_url }}" allowfullscreen scrolling="no"></iframe>';
+            // Загружаем точную страницу фильма с kinogo.my
+            container.innerHTML = '<iframe src="{{ movie.video_url }}" allowfullscreen></iframe>';
             modal.style.display = 'flex';
         }
         function closePlayer() {
