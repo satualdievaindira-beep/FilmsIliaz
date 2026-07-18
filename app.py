@@ -190,7 +190,7 @@ MOVIES = [
         "rating": 8.4,
         "duration": "144 мин.",
         "description": "Писатель Джек Торренс теряет рассудок в пустом зимнем отеле Оверлук...",
-        "cast": "Джек Никонсон, Шелли Дювалл"
+        "cast": "Джек Николсон, Шелли Дювалл"
     },
     {
         "id": 15,
@@ -336,32 +336,15 @@ MOVIE_HTML = """
         .watch-btn {
             display: inline-block; background-color: var(--accent-green); color: white;
             padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; border: none; margin-bottom: 25px; transition: background 0.2s;
+            text-decoration: none; margin-bottom: 25px; transition: background 0.2s;
             text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(45,183,66,0.3);
+            text-align: center;
         }
         .watch-btn:hover { background-color: var(--accent-green-hover); }
 
         .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .meta-table td { padding: 10px 0; border-bottom: 1px solid #28283a; }
         .meta-table td.label { color: var(--text-muted); width: 140px; }
-        
-        /* МОДАЛЬНОЕ ОКНО */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); z-index: 1000; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        .modal-content {
-            background-color: #000000; width: 90%; max-width: 1050px; height: 650px;
-            border-radius: 16px; overflow: hidden; position: relative; border: 2px solid var(--primary);
-            display: flex; flex-direction: column;
-        }
-        .modal-header { background-color: #161623; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
-        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; }
-        .close-btn:hover { color: var(--primary); }
-        .modal-body { flex-grow: 1; width: 100%; height: 100%; background-color: #000; }
-        .modal-body iframe { width: 100%; height: 100%; border: none; }
 
         .reviews-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }
         .review-item { background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
@@ -380,7 +363,8 @@ MOVIE_HTML = """
             <div class="poster-box"><img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}"></div>
             <div class="info-box">
                 <h2>{{ movie.title }} ({{ movie.year }})</h2>
-                <button class="watch-btn" onclick="openPlayer()">Смотреть фильм</button>
+                <!-- Открываем оригинальную ссылку в новой вкладке без блокировок -->
+                <a href="{{ movie.video_url }}" target="_blank" class="watch-btn">Смотреть на Kinogo</a>
                 <table class="meta-table">
                     <tr><td class="label">Жанр</td><td>{{ movie.genre }}</td></tr>
                     <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{ movie.rating }}</td></tr>
@@ -403,36 +387,6 @@ MOVIE_HTML = """
             </form>
         </div>
     </div>
-
-    <div class="modal-overlay" id="playerModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Kinogo.my: {{ movie.title }}</h3>
-                <button class="close-btn" onclick="closePlayer()">&times;</button>
-            </div>
-            <div class="modal-body"><div id="iframeContainer" style="width:100%; height:100%;"></div></div>
-        </div>
-    </div>
-
-    <script>
-        function openPlayer() {
-            var modal = document.getElementById('playerModal');
-            var container = document.getElementById('iframeContainer');
-            // Загружаем точную страницу фильма с kinogo.my
-            container.innerHTML = '<iframe src="{{ movie.video_url }}" allowfullscreen></iframe>';
-            modal.style.display = 'flex';
-        }
-        function closePlayer() {
-            var modal = document.getElementById('playerModal');
-            var container = document.getElementById('iframeContainer');
-            container.innerHTML = '';
-            modal.style.display = 'none';
-        }
-        window.onclick = function(event) {
-            var modal = document.getElementById('playerModal');
-            if (event.target == modal) { closePlayer(); }
-        }
-    </script>
 </body>
 </html>
 """
