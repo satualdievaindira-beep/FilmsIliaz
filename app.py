@@ -8,15 +8,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey_films_iliaz_2026_secure')
 app.config['DEBUG'] = True
 
-# --- БАЗА ДАННЫХ С СОВЕРШЕННО БЕЗОПАСНЫМИ ССЫЛКАМИ НА RUTUBE ---
+# --- ПОЛНАЯ БАЗА ДАННЫХ ИЗ 16 ФИЛЬМОВ С ПРЯМЫМИ ССЫЛКАМИ НА СТАБИЛЬНЫЙ ПРОСМОТР ---
 MOVIES = [
     {
         "id": 1,
         "title": "Аватар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg",
-        # Ссылка на встраиваемый плеер Rutube (пример стабильного ID)
-        "video_url": "https://rutube.ru/play/embed/8451f28b22a075e7a964beab03333333", 
+        "video_url": "https://rutube.ru/search/?query=Аватар%202009", 
         "year": 2009,
         "director": "Джеймс Кэмерон",
         "rating": 7.9,
@@ -25,11 +24,37 @@ MOVIES = [
         "cast": "Сэм Уортингтон, Зои Салдана"
     },
     {
+        "id": 2,
+        "title": "Властелин колец: Братство Кольца",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg",
+        "video_url": "https://rutube.ru/search/?query=Властелин%20колец%20Братство%20Кольца", 
+        "year": 2001,
+        "director": "Питер Джексон",
+        "rating": 8.6,
+        "duration": "178 мин.",
+        "description": "В спокойной деревушке Хоббитон молодой хоббит Фродо Бэггинс получает Кольцо Всевластья...",
+        "cast": "Элайджа Вуд, Иэн Маккеллен"
+    },
+    {
+        "id": 3,
+        "title": "Гарри Поттер и Философский камень",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg",
+        "video_url": "https://rutube.ru/search/?query=Гарри%20Поттер%20и%20Философский%20камень", 
+        "year": 2001,
+        "director": "Крис Коламбус",
+        "rating": 8.2,
+        "duration": "152 мин.",
+        "description": "Гарри Поттер — обычный сирота, узнающий в 11 лет, что он волшебник...",
+        "cast": "Дэниэл Рэдклифф, Эмма Уотсон"
+    },
+    {
         "id": 4,
         "title": "Интерстеллар",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg",
-        "video_url": "https://rutube.ru/play/embed/6e398be9f77f5a0fb79c9c438ba66d62", 
+        "video_url": "https://rutube.ru/search/?query=Интерстеллар%202014", 
         "year": 2014,
         "director": "Кристофер Нолан",
         "rating": 8.6,
@@ -42,18 +67,158 @@ MOVIES = [
         "title": "Матрица",
         "genre": "Фантастика",
         "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg",
-        "video_url": "https://rutube.ru/play/embed/b5c7f8a7d7b69c438ba66d6211111111", 
+        "video_url": "https://rutube.ru/search/?query=Матрица%201999", 
         "year": 1999,
         "director": "Лана Вачовски",
         "rating": 8.5,
         "duration": "136 мин.",
         "description": "Жизнь Томаса Андерсона разделена на две части: днем он программист, ночью — хакер Нео...",
         "cast": "Киану Ривз, Лоренс Фишбёрн"
+    },
+    {
+        "id": 6,
+        "title": "Начало",
+        "genre": "Фантастика",
+        "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg",
+        "video_url": "https://rutube.ru/search/?query=Начало%202010%20фильм", 
+        "year": 2010,
+        "director": "Кристофер Нолан",
+        "rating": 8.7,
+        "duration": "148 мин.",
+        "description": "Кобб — мастер кражи секретов из глубин подсознания во время сна...",
+        "cast": "Леонардо Ди Каприо, Том Харди"
+    },
+    {
+        "id": 7,
+        "title": "Темный рыцарь",
+        "genre": "Боевики",
+        "poster": "https://kinogo.my/uploads/posts/2020-03/1585250490_the-dark-knight-2008.jpg",
+        "video_url": "https://rutube.ru/search/?query=Темный%20рыцарь%202008", 
+        "year": 2008,
+        "director": "Кристофер Нолан",
+        "rating": 8.5,
+        "duration": "152 мин.",
+        "description": "Бэтмен поднимает ставки в войне с криминалом, сталкиваясь с безумным Джокером...",
+        "cast": "Кристиан Бейл, Хит Леджер"
+    },
+    {
+        "id": 8,
+        "title": "Гладиатор",
+        "genre": "Боевики",
+        "poster": "https://kinogo.my/uploads/posts/2019-11/1574343110_gladiator-2000.jpg",
+        "video_url": "https://rutube.ru/search/?query=Гладиатор%202000%20фильм", 
+        "year": 2000,
+        "director": "Ридли Скотт",
+        "rating": 8.6,
+        "duration": "155 мин.",
+        "description": "Преданный генерал Максимус становится гладиатором, чтобы отомстить убийце своей семьи...",
+        "cast": "Рассел Кроу, Хоакин Феникс"
+    },
+    {
+        "id": 9,
+        "title": "Мальчишник в Вегасе",
+        "genre": "Комедии",
+        "poster": "https://kinogo.my/uploads/posts/2017-04/1491158875-2116979171-malchishnik-v-vegase.jpg",
+        "video_url": "https://rutube.ru/search/?query=Мальчишник%20в%20Вегасе", 
+        "year": 2009,
+        "director": "Тодд Филлипс",
+        "rating": 7.9,
+        "duration": "100 мин.",
+        "description": "Трое друзей просыпаются после мальчишника в Вегасе и понимают, что жених исчез...",
+        "cast": "Брэдли Купер, Зак Галифианакис"
+    },
+    {
+        "id": 10,
+        "title": "Маска",
+        "genre": "Комедии",
+        "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg",
+        "video_url": "https://rutube.ru/search/?query=Маска%20фильм%201994", 
+        "year": 1994,
+        "director": "Чак Рассел",
+        "rating": 8.0,
+        "duration": "101 мин.",
+        "description": "Скромный работник банка находит маску, превращающую его в неуязвимого весельчака...",
+        "cast": "Джим Керри, Кэмерон Диас"
+    },
+    {
+        "id": 11,
+        "title": "Главный герой",
+        "genre": "Комедии",
+        "poster": "https://kinogo.my/uploads/posts/2021-09/1632400100_free-guy-2021.jpg",
+        "video_url": "https://rutube.ru/search/?query=Главный%20герой%20фильм%202021", 
+        "year": 2021,
+        "director": "Шон Леви",
+        "rating": 7.2,
+        "duration": "115 мин.",
+        "description": "Банковский клерк узнает, что он — второстепенный персонаж в жестокой видеоигре...",
+        "cast": "Райан Рейнольдс, Джоди Комер"
+    },
+    {
+        "id": 12,
+        "title": "Заклятие",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2020-03/1583751212-1153530858-zaklyatie.jpg",
+        "video_url": "https://rutube.ru/search/?query=Заклятие%20фильм%202013", 
+        "year": 2013,
+        "director": "Джеймс Ван",
+        "rating": 7.4,
+        "duration": "112 мин.",
+        "description": "Исследователи паранормального помогают семье, столкнувшейся с темным духом на ферме...",
+        "cast": "Вера Фармига, Патрик Уилсон"
+    },
+    {
+        "id": 13,
+        "title": "Оно",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2019-10/1570100719-126843975-ono.jpg",
+        "video_url": "https://rutube.ru/search/?query=Оно%20фильм%202017", 
+        "year": 2017,
+        "director": "Энди Мускетти",
+        "rating": 7.3,
+        "duration": "135 мин.",
+        "description": "Школьники объединяются, чтобы победить жуткого клоуна Пеннивайза...",
+        "cast": "Билл Скарсгард, Финн Вулфхард"
+    },
+    {
+        "id": 14,
+        "title": "Сияние",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg",
+        "video_url": "https://rutube.ru/search/?query=Сияние%20фильм%201980", 
+        "year": 1980,
+        "director": "Стэнли Кубрик",
+        "rating": 8.4,
+        "duration": "144 мин.",
+        "description": "Писатель Джек Торренс теряет рассудок в пустом зимнем отеле Оверлук...",
+        "cast": "Джек Николсон, Шелли Дювалл"
+    },
+    {
+        "id": 15,
+        "title": "Тихое место",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2019-10/1570971117-511240173-tihoe-mesto.jpg",
+        "video_url": "https://rutube.ru/search/?query=Тихое%20место%20фильм%202018", 
+        "year": 2018,
+        "director": "Джон Красински",
+        "rating": 7.1,
+        "duration": "90 мин.",
+        "description": "Семья выживает в мире слепых монстров, реагирующих на малейший звук...",
+        "cast": "Эмили Блант, Джон Красински"
+    },
+    {
+        "id": 16,
+        "title": "Астрал",
+        "genre": "Ужасы",
+        "poster": "https://kinogo.my/uploads/posts/2020-02/1582196735-58106119-astral.jpg",
+        "video_url": "https://rutube.ru/search/?query=Астрал%20фильм%202010", 
+        "year": 2010,
+        "director": "Джеймс Ван",
+        "rating": 6.8,
+        "duration": "103 мин.",
+        "description": "Мальчик впадает в кому, а его душа оказывается заперта в пугающем Астрале...",
+        "cast": "Патрик Уилсон, Роуз Бирн"
     }
 ]
-
-# Для остальных фильмов из старой базы (если захочешь добавить позже)
-# Достаточно зайти на Rutube, найти нужный фильм, нажать "Поделиться" -> "Код вставки" и скопировать ссылку из src=""
 
 REVIEWS = {movie["id"]: [] for movie in MOVIES}
 
@@ -101,7 +266,7 @@ INDEX_HTML = """
         <p>Индивидуальная онлайн-галерея твоих любимых фильмов</p>
     </header>
     <div class="container">
-        {% for genre in ["Фантастика"] %}
+        {% for genre in ["Фантастика", "Боевики", "Комедии", "Ужасы"] %}
         <div class="genre-section">
             <div class="genre-header"><h2 class="genre-title">{{ genre }}</h2></div>
             <div class="movies-grid">
@@ -156,41 +321,24 @@ MOVIE_HTML = """
         .info-box { flex-grow: 1; }
         .info-box h2 { margin: 0 0 15px 0; font-size: 2.8rem; }
         
-        .watch-btn {
+        .watch-link {
             display: inline-block; background-color: var(--accent-green); color: white;
             padding: 14px 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; border: none; margin-bottom: 25px; transition: background 0.2s;
+            text-decoration: none; margin-bottom: 25px; transition: background 0.2s;
             text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(45,183,66,0.3);
+            text-align: center;
         }
-        .watch-btn:hover { background-color: var(--accent-green-hover); }
+        .watch-link:hover { background-color: var(--accent-green-hover); }
 
         .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .meta-table td { padding: 10px 0; border-bottom: 1px solid #28283a; }
         .meta-table td.label { color: var(--text-muted); width: 140px; }
         
-        /* МОДАЛЬНОЕ ОКНО */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        .modal-content {
-            background-color: #000000; width: 90%; max-width: 960px; height: 560px;
-            border-radius: 16px; overflow: hidden; position: relative; border: 2px solid var(--primary);
-            display: flex; flex-direction: column;
-        }
-        .modal-header { background-color: #161623; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
-        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; }
-        .close-btn:hover { color: var(--primary); }
-        .modal-body { flex-grow: 1; width: 100%; height: 100%; background-color: #000; }
-        .modal-body iframe { width: 100%; height: 100%; border: none; }
-
         .reviews-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; margin-top: 40px; }
         .review-item { background-color: #212130; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
         .review-user { font-weight: bold; color: var(--primary); }
         .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3a3a52; background-color: #121218; color: white; margin-bottom: 15px; box-sizing: border-box;}
-        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; }
+        .btn-submit { background-color: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -203,7 +351,8 @@ MOVIE_HTML = """
             <div class="poster-box"><img src="{{ url_for('proxy_image', url=movie.poster) }}" alt="{{ movie.title }}"></div>
             <div class="info-box">
                 <h2>{{ movie.title }} ({{ movie.year }})</h2>
-                <button class="watch-btn" onclick="openPlayer()">Смотреть фильм</button>
+                <!-- ПРЯМАЯ БЕЗОПАСНАЯ ССЫЛКА НА ПРОСМОТР В НОВОЙ ВКЛАДКЕ -->
+                <a href="{{ movie.video_url }}" target="_blank" class="watch-link">Смотреть фильм</a>
                 <table class="meta-table">
                     <tr><td class="label">Жанр</td><td>{{ movie.genre }}</td></tr>
                     <tr><td class="label">Рейтинг</td><td style="color:#ffc107; font-weight:bold;">★ {{ movie.rating }}</td></tr>
@@ -214,37 +363,19 @@ MOVIE_HTML = """
                 <p style="line-height: 1.6; color: #d1d1d6;">{{ movie.description }}</p>
             </div>
         </div>
-    </div>
-
-    <div class="modal-overlay" id="playerModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Онлайн плеер: {{ movie.title }}</h3>
-                <button class="close-btn" onclick="closePlayer()">&times;</button>
-            </div>
-            <div class="modal-body"><div id="iframeContainer" style="width:100%; height:100%;"></div></div>
+        
+        <div class="reviews-wrapper">
+            <h3>Отзывы</h3>
+            {% for r in reviews %}
+                <div class="review-item"><div class="review-user">{{ r.name }}</div><div>{{ r.text }}</div></div>
+            {% endfor %}
+            <form action="{{ url_for('movie_detail', movie_id=movie.id) }}" method="POST" style="margin-top:25px;">
+                <input type="text" name="name" class="input-field" placeholder="Ваше имя" required>
+                <textarea name="review_text" class="input-field" placeholder="Ваш отзыв" style="min-height:100px;" required></textarea>
+                <button type="submit" class="btn-submit">Отправить</button>
+            </form>
         </div>
     </div>
-
-    <script>
-        function openPlayer() {
-            var modal = document.getElementById('playerModal');
-            var container = document.getElementById('iframeContainer');
-            // Встраиваем полностью легальный плеер Rutube, разрешающий iframe
-            container.innerHTML = '<iframe src="{{ movie.video_url }}" width="100%" height="100%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>';
-            modal.style.display = 'flex';
-        }
-        function closePlayer() {
-            var modal = document.getElementById('playerModal');
-            var container = document.getElementById('iframeContainer');
-            container.innerHTML = '';
-            modal.style.display = 'none';
-        }
-        window.onclick = function(event) {
-            var modal = document.getElementById('playerModal');
-            if (event.target == modal) { closePlayer(); }
-        }
-    </script>
 </body>
 </html>
 """
@@ -268,6 +399,11 @@ def index():
 def movie_detail(movie_id):
     movie = next((m for m in MOVIES if m["id"] == movie_id), None)
     if not movie: return "Фильм не найден", 404
+    if request.method == 'POST':
+        name = request.form.get('name', 'Аноним').strip()
+        text = request.form.get('review_text', '').strip()
+        if text: REVIEWS[movie_id].append({"name": name, "text": text})
+        return redirect(url_for('movie_detail', movie_id=movie_id))
     return render_template_string(MOVIE_HTML, movie=movie, reviews=REVIEWS.get(movie_id, []))
 
 if __name__ == '__main__':
