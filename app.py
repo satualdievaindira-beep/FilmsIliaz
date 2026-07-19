@@ -3,7 +3,7 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# База данных с твоими ссылками на постеры
+# (База данных MOVIES остается такой же, как в прошлом сообщении)
 MOVIES = [
     {"id": 1, "title": "Аватар", "year": 2009, "author": "Джеймс Кэмерон", "desc": "История о далекой планете Пандора.", "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg", "rating": 7.9, "kp_url": "https://www.kinopoisk.ru/film/251733/"},
     {"id": 2, "title": "Властелин колец", "year": 2001, "author": "Питер Джексон", "desc": "Путешествие хоббита Фродо к Роковой горе.", "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg", "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/328/"},
@@ -30,50 +30,55 @@ def get_html(content):
         <title>Films_Iliaz Pro</title>
         <script src="https://quge5.com/88/tag.min.js" data-zone="261051" async></script>
         <style>
-            body {{ background: #0f0f12; color: white; font-family: sans-serif; margin: 0; }}
+            body {{ background: #0f0f12; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }}
             nav {{ background: #1a1a24; padding: 15px; display: flex; gap: 20px; }}
             nav a {{ color: white; text-decoration: none; font-weight: bold; }}
+            footer {{ margin-top: auto; background: #1a1a24; padding: 20px; text-align: center; color: #888; }}
+            footer a {{ color: #ff4a5a; text-decoration: none; margin: 0 10px; }}
             .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; }}
-            .card {{ background: #1a1a24; padding: 10px; border-radius: 10px; text-decoration: none; color: white; display: block; text-align: center; transition: 0.3s; }}
-            .card:hover {{ background: #2a2a35; }}
-            .card img {{ width: 100%; border-radius: 8px; }}
-            .movie-page {{ text-align: center; padding: 40px 20px; max-width: 600px; margin: auto; }}
-            .btn {{ display: inline-block; background: #ff4a5a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }}
-            .info {{ color: #aaa; margin: 5px 0; }}
+            .card {{ background: #1a1a24; padding: 10px; border-radius: 10px; text-decoration: none; color: white; display: block; text-align: center; }}
+            .btn {{ display: inline-block; background: #ff4a5a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px; }}
+            .content {{ padding: 20px; max-width: 800px; margin: auto; }}
         </style>
     </head>
     <body>
         <nav><a href="/">Главная</a><a href="/top10">Топ-10</a></nav>
-        {content}
+        <div class="content">{content}</div>
+        <footer>
+            <a href="/about">О нас</a> | <a href="/contacts">Контакты</a> | <a href="/cookies">Cookie</a>
+        </footer>
     </body>
     </html>
     """
 
 @app.route('/')
 def index():
-    grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}"><h3>{m["title"]}</h3><p class="info">{m["year"]}</p></a>' for m in MOVIES])
+    grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]}</h3></a>' for m in MOVIES])
     return render_template_string(get_html(f'<div class="grid">{grid}</div>'))
 
 @app.route('/movie/<int:mid>')
 def movie_page(mid):
     m = next((item for item in MOVIES if item["id"] == mid), None)
-    if not m: return "Фильм не найден", 404
-    return render_template_string(get_html(f'''
-        <div class="movie-page">
-            <h1>{m["title"]} ({m["year"]})</h1>
-            <img src="{m["poster"]}" width="300" style="border-radius: 10px;">
-            <p><strong>Режиссер:</strong> {m["author"]}</p>
-            <p><strong>Рейтинг:</strong> {m["rating"]}</p>
-            <p>{m["desc"]}</p>
-            <a href="{m["kp_url"]}" target="_blank" class="btn">Смотреть на Кинопоиске</a>
-        </div>
-    '''))
+    return render_template_string(get_html(f'<h1>{m["title"]}</h1><p>{m["desc"]}</p><a href="{m["kp_url"]}" target="_blank" class="btn">Смотреть</a>'))
 
 @app.route('/top10')
 def top10():
     top = sorted(MOVIES, key=lambda x: x['rating'], reverse=True)[:10]
-    grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><h3>{m["title"]}</h3><p class="info">{m["rating"]} / 10</p></a>' for m in top])
-    return render_template_string(get_html(f'<h1 style="padding-left:20px;">Лучшие фильмы</h1><div class="grid">{grid}</div>'))
+    grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><h3>{m["title"]}</h3></a>' for m in top])
+    return render_template_string(get_html(f'<h1>Топ-10</h1><div class="grid">{grid}</div>'))
+
+# Новые страницы
+@app.route('/about')
+def about():
+    return render_template_string(get_html("<h1>О нас</h1><p>Films_Iliaz Pro — ваш лучший онлайн-кинотеатр с подборками фильмов.</p>"))
+
+@app.route('/contacts')
+def contacts():
+    return render_template_string(get_html("<h1>Контакты</h1><p>Связаться с админом можно по почте: admin@filmsiliaz.com</p>"))
+
+@app.route('/cookies')
+def cookies():
+    return render_template_string(get_html("<h1>Политика Cookie</h1><p>Мы используем файлы cookie для улучшения работы сайта и показа рекламы.</p>"))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
