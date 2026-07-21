@@ -44,6 +44,9 @@ def get_html(content):
         .grid{{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; padding:20px;}}
         .card{{background:#1a1a24; padding:10px; border-radius:10px; color:white; text-decoration:none; text-align:center;}}
         .btn{{display:inline-block; background:#ff4a5a; padding:10px; color:white; text-decoration:none; border-radius:5px; margin:5px;}}
+        .search-box{{margin-left:auto; display:flex; gap:5px;}}
+        .search-box input{{padding:6px; border-radius:5px; border:none;}}
+        .search-box button{{padding:6px 12px; background:#ff4a5a; color:white; border:none; border-radius:5px; cursor:pointer;}}
     </style></head>
     <body>
         <nav>
@@ -53,6 +56,10 @@ def get_html(content):
             <a href="/top1">Топ-1</a> 
             <a href="/random" style="background:#ff4a5a; padding:6px 12px; border-radius:5px;">🎲 Случайный фильм</a>
             <a href="/favorites">Избранное ({count})</a>
+            <form action="/search" method="GET" class="search-box">
+                <input type="text" name="q" placeholder="Поиск фильма..." required>
+                <button type="submit">Найти</button>
+            </form>
         </nav>
         {content}
     </body></html>"""
@@ -109,10 +116,17 @@ def top1():
     grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]} ({m.get("rating")})</h3></a>' for m in top_list])
     return render_template_string(get_html(f'<h1>Топ-1 фильм</h1><div class="grid">{grid}</div>'))
 
-# Новая полезная фича: Случайный фильм
 @app.route('/random')
 def random_movie():
     random_m = random.choice(MOVIES)
     return redirect(url_for('movie_page', mid=random_m['id']))
+
+# Новая фича: Поиск по фильмам
+@app.route('/search')
+def search():
+    query = request.args.get('q', '').lower()
+    found_movies = [m for m in MOVIES if query in m['title'].lower()]
+    grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]}</h3></a>' for m in found_movies]) if found_movies else "<p style='padding:20px;'>Ничего не найдено по вашему запросу.</p>"
+    return render_template_string(get_html(f'<h1>Результаты поиска: "{query}"</h1><div class="grid">{grid}</div>'))
 
 if __name__ == '__main__': app.run(debug=True)
