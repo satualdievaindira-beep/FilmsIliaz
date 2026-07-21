@@ -6,31 +6,32 @@ app.secret_key = 'super_secret_key'
 
 # Твои 20 фильмов с реальными ссылками на Кинопоиск и рейтингами
 MY_MOVIES = [
-    {"id": 1, "title": "Аватар", "rating": 7.9, "kp_url": "https://www.kinopoisk.ru/film/251733/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg"},
-    {"id": 2, "title": "Властелин колец", "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/328/", "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg"},
-    {"id": 3, "title": "Интерстеллар", "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/258687/", "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg"},
-    {"id": 4, "title": "Начало", "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/447301/", "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg"},
-    {"id": 5, "title": "Темный рыцарь", "rating": 8.5, "kp_url": "https://www.kinopoisk.ru/film/111543/", "poster": "https://kinogo.my/uploads/posts/2020-04/1585997266-939135485-temnyy-rycar.jpg"},
-    {"id": 6, "title": "Матрица", "rating": 8.5, "kp_url": "https://www.kinopoisk.ru/film/301/", "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg"},
-    {"id": 7, "title": "Гладиатор", "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/474/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493391510-611397561-gladiator.jpg"},
-    {"id": 8, "title": "Маска", "rating": 8.0, "kp_url": "https://www.kinopoisk.ru/film/2324/", "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg"},
-    {"id": 9, "title": "Сияние", "rating": 8.4, "kp_url": "https://www.kinopoisk.ru/film/356/", "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg"},
-    {"id": 10, "title": "Гарри Поттер", "rating": 8.2, "kp_url": "https://www.kinopoisk.ru/film/689/", "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg"},
-    {"id": 11, "title": "Бойцовский клуб", "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/361/", "poster": "https://kinogo.my/uploads/posts/2017-04/1491114704-1886867375-boycovskiy-klub.jpg"},
-    {"id": 12, "title": "Криминальное чтиво", "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/342/", "poster": "https://kinogo.my/uploads/posts/2023-11/1700692804-555184796-kriminalnoe-chtivo.jpg"},
-    {"id": 13, "title": "Леон", "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/389/", "poster": "https://kinogo.my/uploads/posts/2019-07/1564070804-298906622-leon.jpg"},
-    {"id": 14, "title": "Зеленая миля", "rating": 9.1, "kp_url": "https://www.kinopoisk.ru/film/435/", "poster": "https://kinogo.my/uploads/posts/2017-10/1509302130-598249484-zelenaya-milya.jpg"},
-    {"id": 15, "title": "Форрест Гамп", "rating": 8.9, "kp_url": "https://www.kinopoisk.ru/film/448/", "poster": "https://kinogo.my/uploads/posts/2020-02/1581515741-1303433223-forrest-gamp.jpg"},
-    {"id": 16, "title": "Титаник", "rating": 8.3, "kp_url": "https://www.kinopoisk.ru/film/2213/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493541637-176580560-titanik.jpg"},
-    {"id": 17, "title": "Побег из Шоушенка", "rating": 9.1, "kp_url": "https://www.kinopoisk.ru/film/326/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493224416-1754132569-pobeg-iz-shoushenka.jpg"},
-    {"id": 18, "title": "Терминатор 2", "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/447/", "poster": "https://kinogo.my/uploads/posts/2020-03/1584109913-1352932125-terminator-2-sudnyy-den.jpg"},
-    {"id": 19, "title": "Крестный отец", "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/325/", "poster": "https://kinogo.my/uploads/posts/2019-11/1572705738-814634704-krestnyy-otec.jpg"},
-    {"id": 20, "title": "Назад в будущее", "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/494/", "poster": "https://kinogo.my/uploads/posts/2020-06/1591629086-1280450088-nazad-v-buduschee.jpg"}
+    {"id": 1, "title": "Аватар", "year": 2009, "rating": 7.9, "kp_url": "https://www.kinopoisk.ru/film/251733/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493391756-1159271017-avatar.jpg"},
+    {"id": 2, "title": "Властелин колец", "year": 2001, "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/328/", "poster": "https://kinogo.my/uploads/posts/2019-07/1563720942-490328414-vlastelin-kolec-bratstvo-kolca.jpg"},
+    {"id": 3, "title": "Интерстеллар", "year": 2014, "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/258687/", "poster": "https://kinogo.my/uploads/posts/2017-04/1491114790-991695033-interstellar.jpg"},
+    {"id": 4, "title": "Начало", "year": 2010, "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/447301/", "poster": "https://kinogo.my/uploads/posts/2017-04/1491114986-2049908774-nachalo.jpg"},
+    {"id": 5, "title": "Темный рыцарь", "year": 2008, "rating": 8.5, "kp_url": "https://www.kinopoisk.ru/film/111543/", "poster": "https://kinogo.my/uploads/posts/2020-04/1585997266-939135485-temnyy-rycar.jpg"},
+    {"id": 6, "title": "Матрица", "year": 1999, "rating": 8.5, "kp_url": "https://www.kinopoisk.ru/film/301/", "poster": "https://kinogo.my/uploads/posts/2020-01/1578316075-753251593-matrica.jpg"},
+    {"id": 7, "title": "Гладиатор", "year": 2000, "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/474/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493391510-611397561-gladiator.jpg"},
+    {"id": 8, "title": "Маска", "year": 1994, "rating": 8.0, "kp_url": "https://www.kinopoisk.ru/film/2324/", "poster": "https://kinogo.my/uploads/posts/2023-11/1699995824-1618804087-maska.jpg"},
+    {"id": 9, "title": "Сияние", "year": 1980, "rating": 8.4, "kp_url": "https://www.kinopoisk.ru/film/356/", "poster": "https://kinogo.my/uploads/posts/2024-01/1704798751-1904935975-siyanie.jpg"},
+    {"id": 10, "title": "Гарри Поттер", "year": 2001, "rating": 8.2, "kp_url": "https://www.kinopoisk.ru/film/689/", "poster": "https://kinogo.my/uploads/posts/2019-07/1563015062-1572996915-garri-potter-i-filosofskiy-kamen.jpg"},
+    {"id": 11, "title": "Бойцовский клуб", "year": 1999, "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/361/", "poster": "https://kinogo.my/uploads/posts/2017-04/1491114704-1886867375-boycovskiy-klub.jpg"},
+    {"id": 12, "title": "Криминальное чтиво", "year": 1994, "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/342/", "poster": "https://kinogo.my/uploads/posts/2023-11/1700692804-555184796-kriminalnoe-chtivo.jpg"},
+    {"id": 13, "title": "Леон", "year": 1994, "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/389/", "poster": "https://kinogo.my/uploads/posts/2019-07/1564070804-298906622-leon.jpg"},
+    {"id": 14, "title": "Зеленая миля", "year": 1999, "rating": 9.1, "kp_url": "https://www.kinopoisk.ru/film/435/", "poster": "https://kinogo.my/uploads/posts/2017-10/1509302130-598249484-zelenaya-milya.jpg"},
+    {"id": 15, "title": "Форрест Гамп", "year": 1994, "rating": 8.9, "kp_url": "https://www.kinopoisk.ru/film/448/", "poster": "https://kinogo.my/uploads/posts/2020-02/1581515741-1303433223-forrest-gamp.jpg"},
+    {"id": 16, "title": "Титаник", "year": 1997, "rating": 8.3, "kp_url": "https://www.kinopoisk.ru/film/2213/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493541637-176580560-titanik.jpg"},
+    {"id": 17, "title": "Побег из Шоушенка", "year": 1994, "rating": 9.1, "kp_url": "https://www.kinopoisk.ru/film/326/", "poster": "https://kinogo.my/uploads/posts/2017-04/1493224416-1754132569-pobeg-iz-shoushenka.jpg"},
+    {"id": 18, "title": "Терминатор 2", "year": 1991, "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/447/", "poster": "https://kinogo.my/uploads/posts/2020-03/1584109913-1352932125-terminator-2-sudnyy-den.jpg"},
+    {"id": 19, "title": "Крестный отец", "year": 1972, "rating": 8.7, "kp_url": "https://www.kinopoisk.ru/film/325/", "poster": "https://kinogo.my/uploads/posts/2019-11/1572705738-814634704-krestnyy-otec.jpg"},
+    {"id": 20, "title": "Назад в будущее", "year": 1985, "rating": 8.6, "kp_url": "https://www.kinopoisk.ru/film/494/", "poster": "https://kinogo.my/uploads/posts/2020-06/1591629086-1280450088-nazad-v-buduschee.jpg"}
 ]
 
-MOVIES = MY_MOVIES + [{"id": i, "title": f"Фильм #{i}", "rating": 7.0, "kp_url": "https://www.kinopoisk.ru", "poster": "https://via.placeholder.com/200x300"} for i in range(21, 101)]
+MOVIES = MY_MOVIES + [{"id": i, "title": f"Фильм #{i}", "year": 2020, "rating": 7.0, "kp_url": "https://www.kinopoisk.ru", "poster": "https://via.placeholder.com/200x300"} for i in range(21, 101)]
 for m in MOVIES: 
     if 'reviews' not in m: m['reviews'] = []
+    if 'year' not in m: m['year'] = 2020
 
 def get_html(content):
     count = len(session.get('favorites', []))
@@ -54,6 +55,7 @@ def get_html(content):
             <a href="/top10">Топ-10</a> 
             <a href="/top5">Топ-5</a> 
             <a href="/top1">Топ-1</a> 
+            <a href="/years">📅 По годам</a>
             <a href="/random" style="background:#ff4a5a; padding:6px 12px; border-radius:5px;">🎲 Случайный фильм</a>
             <a href="/favorites">Избранное ({count})</a>
             <a href="/stats">📊 Статистика</a>
@@ -77,7 +79,7 @@ def movie_page(mid):
     reviews = "".join([f'<p style="background:#222; padding:5px; border-radius:5px;">{r}</p>' for r in m['reviews']])
     return render_template_string(get_html(f'''
         <div style="padding:20px;">
-            <h1>{m["title"]}</h1>
+            <h1>{m["title"]} ({m.get("year", "N/A")})</h1>
             <img src="{m["poster"]}" width="300" style="border-radius:10px;">
             <p>Рейтинг: {m.get("rating", "N/A")}</p>
             <br><a href="{m["kp_url"]}" target="_blank" class="btn">Смотреть на Кинопоиске</a>
@@ -117,6 +119,13 @@ def top1():
     grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]} ({m.get("rating")})</h3></a>' for m in top_list])
     return render_template_string(get_html(f'<h1>Топ-1 фильм</h1><div class="grid">{grid}</div>'))
 
+# Новая фича: Сортировка по годам
+@app.route('/years')
+def years():
+    sorted_movies = sorted(MOVIES, key=lambda x: x.get('year', 2020), reverse=True)
+    grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]} ({m.get("year")})</h3></a>' for m in sorted_movies])
+    return render_template_string(get_html(f'<h1>Фильмы по годам</h1><div class="grid">{grid}</div>'))
+
 @app.route('/random')
 def random_movie():
     random_m = random.choice(MOVIES)
@@ -129,7 +138,6 @@ def search():
     grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]}</h3></a>' for m in found_movies]) if found_movies else "<p style='padding:20px;'>Ничего не найдено по вашему запросу.</p>"
     return render_template_string(get_html(f'<h1>Результаты поиска: "{query}"</h1><div class="grid">{grid}</div>'))
 
-# Новая фича: Статистика сайта
 @app.route('/stats')
 def stats():
     total_movies = len(MOVIES)
