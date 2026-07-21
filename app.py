@@ -56,6 +56,7 @@ def get_html(content):
             <a href="/top1">Топ-1</a> 
             <a href="/random" style="background:#ff4a5a; padding:6px 12px; border-radius:5px;">🎲 Случайный фильм</a>
             <a href="/favorites">Избранное ({count})</a>
+            <a href="/stats">📊 Статистика</a>
             <form action="/search" method="GET" class="search-box">
                 <input type="text" name="q" placeholder="Поиск фильма..." required>
                 <button type="submit">Найти</button>
@@ -121,12 +122,28 @@ def random_movie():
     random_m = random.choice(MOVIES)
     return redirect(url_for('movie_page', mid=random_m['id']))
 
-# Новая фича: Поиск по фильмам
 @app.route('/search')
 def search():
     query = request.args.get('q', '').lower()
     found_movies = [m for m in MOVIES if query in m['title'].lower()]
     grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]}</h3></a>' for m in found_movies]) if found_movies else "<p style='padding:20px;'>Ничего не найдено по вашему запросу.</p>"
     return render_template_string(get_html(f'<h1>Результаты поиска: "{query}"</h1><div class="grid">{grid}</div>'))
+
+# Новая фича: Статистика сайта
+@app.route('/stats')
+def stats():
+    total_movies = len(MOVIES)
+    fav_count = len(session.get('favorites', []))
+    avg_rating = round(sum([m.get('rating', 0) for m in MOVIES]) / total_movies, 2)
+    return render_template_string(get_html(f'''
+        <div style="padding:20px; max-width:600px;">
+            <h1>📊 Статистика сайта Films_Iliaz</h1>
+            <ul style="line-height:2; font-size:18px;">
+                <li>Всего фильмов в базе: <b>{total_movies}</b></li>
+                <li>Фильмов добавлено в твоё избранное: <b>{fav_count}</b></li>
+                <li>Средний рейтинг кинотеки: <b>{avg_rating} / 10</b></li>
+            </ul>
+        </div>
+    '''))
 
 if __name__ == '__main__': app.run(debug=True)
