@@ -1,4 +1,5 @@
 from flask import Flask, render_template_string, request, session, redirect, url_for
+import random
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key'
@@ -38,7 +39,7 @@ def get_html(content):
     <script src="https://quge5.com/88/tag.min.js" data-zone="261051" async></script>
     <style>
         body{{background:#0f0f12; color:white; font-family:sans-serif; margin:0;}} 
-        nav{{background:#1a1a24; padding:15px; display:flex; gap:15px; flex-wrap:wrap;}}
+        nav{{background:#1a1a24; padding:15px; display:flex; gap:15px; flex-wrap:wrap; align-items:center;}}
         nav a{{color:white; text-decoration:none; font-weight:bold;}}
         .grid{{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; padding:20px;}}
         .card{{background:#1a1a24; padding:10px; border-radius:10px; color:white; text-decoration:none; text-align:center;}}
@@ -50,6 +51,7 @@ def get_html(content):
             <a href="/top10">Топ-10</a> 
             <a href="/top5">Топ-5</a> 
             <a href="/top1">Топ-1</a> 
+            <a href="/random" style="background:#ff4a5a; padding:6px 12px; border-radius:5px;">🎲 Случайный фильм</a>
             <a href="/favorites">Избранное ({count})</a>
         </nav>
         {content}
@@ -89,7 +91,6 @@ def favorites():
     grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]}</h3></a>' for m in favs])
     return render_template_string(get_html(f'<h1>Избранное:</h1><div class="grid">{grid}</div>'))
 
-# Новые разделы: Топ-10, Топ-5, Топ-1 (сортировка по рейтингу)
 @app.route('/top10')
 def top10():
     top_list = sorted(MOVIES, key=lambda x: x.get('rating', 0), reverse=True)[:10]
@@ -107,5 +108,11 @@ def top1():
     top_list = sorted(MOVIES, key=lambda x: x.get('rating', 0), reverse=True)[:1]
     grid = "".join([f'<a href="/movie/{m["id"]}" class="card"><img src="{m["poster"]}" width="100%"><h3>{m["title"]} ({m.get("rating")})</h3></a>' for m in top_list])
     return render_template_string(get_html(f'<h1>Топ-1 фильм</h1><div class="grid">{grid}</div>'))
+
+# Новая полезная фича: Случайный фильм
+@app.route('/random')
+def random_movie():
+    random_m = random.choice(MOVIES)
+    return redirect(url_for('movie_page', mid=random_m['id']))
 
 if __name__ == '__main__': app.run(debug=True)
