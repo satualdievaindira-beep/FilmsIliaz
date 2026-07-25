@@ -123,6 +123,12 @@ def movie_page(mid):
     m = next((item for item in MOVIES if item["id"] == mid), None)
     if request.method == 'POST': m['reviews'].append(request.form['text'])
     reviews = "".join([f'<p style="background:#1a1a24; padding:10px; border-radius:5px; margin-top:5px;">{r}</p>' for r in m['reviews']])
+    
+    # Новая фишка: блок "Похожие фильмы" (берем 4 случайных фильма, исключая текущий)
+    similar_movies = [item for item in MOVIES if item["id"] != mid]
+    random.shuffle(similar_movies)
+    similar_grid = "".join([f'<a href="/movie/{sm["id"]}" class="card"><img src="{sm["poster"]}" width="100%"><h4 style="margin:5px 0; font-size:14px;">{sm["title"]}</h4></a>' for sm in similar_movies[:4]])
+
     return render_template_string(get_html(f'''
         <div style="padding:20px;">
             <h1>{m["title"]} ({m.get("year", "N/A")})</h1>
@@ -164,6 +170,14 @@ def movie_page(mid):
                     }}
                 }}
             </script>
+
+            <!-- Блок похожих фильмов -->
+            <div style="margin-top:40px;">
+                <h3 style="color:#ff4a5a; border-bottom: 2px solid #1a1a24; padding-bottom: 8px;">🎬 Похожие фильмы</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:15px; margin-top:15px;">
+                    {similar_grid}
+                </div>
+            </div>
 
             <div style="margin-top:30px; max-width:800px;">
                 <h3>Отзывы:</h3>
