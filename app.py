@@ -1,38 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Aida's Beauty Salon: сайт салона красоты (Бишкек).
-Flask + SQLite, два языка (русский и кыргызский), онлайн-запись, админка.
-
-Запуск:
-    pip install flask
-    python app.py
-Сайт:    http://127.0.0.1:5000
-Админка: http://127.0.0.1:5000/admin
-         (пароль берётся из переменной ADMIN_PASSWORD, по умолчанию "admin123":
-          обязательно смените перед публикацией)
-"""
-
-import os
-import re
-import secrets
-import sqlite3
-import time
-from collections import defaultdict, deque
-from datetime import date, datetime, timedelta
-from functools import wraps
-from urllib.parse import quote, urlparse
-
-from flask import (
-    Flask, abort, flash, g, jsonify, redirect, render_template, request,
-    session, url_for,
-)
-from werkzeug.security import check_password_hash, generate_password_hash
-
-import seed_data
-from i18n import DEFAULT_LANG, LANG_LABELS, LANGS, format_date, format_price, translate
-
-# ---------------------------------------------------------------------------
+----------------------------------------------------------
 # НАСТРОЙКИ САЛОНА: здесь меняются контакты, ссылки и режим работы
 # ---------------------------------------------------------------------------
 SHOP_NAME = "Aida's Beauty Salon"
